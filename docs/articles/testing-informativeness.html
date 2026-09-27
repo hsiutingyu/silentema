@@ -146,9 +146,11 @@ quarter</td>
 </tr>
 </tbody>
 </table>
-<p>All three use person fixed effects (within-person demeaning), so
+<p>The two tests use person fixed effects (within-person demeaning), so
 stable between-person differences in level or in compliance cannot
-produce a spurious result.</p>
+produce a spurious result. The fatigue check reports both a pooled
+contrast, which between-person differences in compliance inflate, and
+the mean of the person-specific contrasts, which they do not.</p>
 </div>
 <div class="section level2">
 <h2 id="the-silence-test">The silence test<a class="anchor" aria-label="anchor" href="#the-silence-test"></a>
@@ -188,7 +190,8 @@ variables combines the evidence.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>triples <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">st</span>, <span class="st">"n_triples"</span><span class="op">)</span>, skipped_middle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">st</span>, <span class="st">"n_skipped"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        triples skipped_middle </span></span>
 <span><span class="co">#&gt;           1187            226</span></span></code></pre></div>
-<p>Under a recoverable mechanism the coefficients are near zero:</p>
+<p>Under a recoverable mechanism the coefficients are near zero and the
+joint test does not reject:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_ema.html">simulate_ema</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">60</span>, T <span class="op">=</span> <span class="fl">40</span>, motifs <span class="op">=</span> <span class="st">"M1"</span>, compliance <span class="op">=</span> <span class="fl">0.7</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/silence_test.html">silence_test</a></span><span class="op">(</span><span class="va">sim1</span><span class="op">$</span><span class="va">data</span>, <span class="va">sim1</span><span class="op">$</span><span class="va">vars</span><span class="op">)</span></span>
@@ -325,11 +328,14 @@ gap into a sensitivity value.</p>
 <p><code><a href="../reference/fatigue_check.html">fatigue_check()</a></code> is descriptive. It reports the response
 rate after an answered and after a skipped prompt, pooled and as the
 mean of the person-specific differences, and the response rate by study
-quarter. A large persistence contrast and a declining rate over quarters
-are what burden (M3) produces; some serial dependence in <code>R</code>
-also arises under M1, M2 and M4 through the autocorrelated states and
-the person propensities, so the check does not discriminate M3 from the
-other motifs by itself.</p>
+quarter. A large persistence contrast (the <code>kappa_R</code> term of
+the simulator) and, when compliance drifts over the study (a negative
+<code>burden</code> term), a declining rate over quarters are what
+burden (M3) produces; the example below uses <code>kappa_R</code> only,
+so the quarterly rates stay flat. Some serial dependence in
+<code>R</code> also arises under M1, M2 and M4 through the
+autocorrelated states and the person propensities, so the check does not
+discriminate M3 from the other motifs by itself.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_ema.html">simulate_ema</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">60</span>, T <span class="op">=</span> <span class="fl">40</span>, motifs <span class="op">=</span> <span class="st">"M3"</span>, compliance <span class="op">=</span> <span class="fl">0.7</span>, kappa_R <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/fatigue_check.html">fatigue_check</a></span><span class="op">(</span><span class="va">sim3</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
@@ -374,9 +380,10 @@ rate near .05 is about .03, so the first two numbers are compatible with
 the nominal level; the third shows the power the test has at this sample
 size and tilt. In the simulation studies of Yu (2026) (500 replications
 per cell, <em>N</em> = 100, <em>T</em> = 56) the rejection rate under
-the recoverable motifs stayed within Monte Carlo error of the nominal
-level, with a mild excess at 85% compliance attributable to the
-small-sample behavior of cluster-robust inference.</p>
+the recoverable motifs stayed between 4% and 7% with two mild excesses
+(8.8% under burden at 70% compliance and 7.4% under lagged-state
+dependence at 85%), compatible with Monte Carlo error and the known
+anticonservatism of cluster-robust standard errors.</p>
 </div>
 <div class="section level2">
 <h2 id="what-to-do-with-a-rejection">What to do with a rejection<a class="anchor" aria-label="anchor" href="#what-to-do-with-a-rejection"></a>

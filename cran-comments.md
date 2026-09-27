@@ -7,27 +7,30 @@ This is a new package. It implements the methods of a manuscript under review (Y
 * local: Ubuntu 24.04, R 4.3.3 (x86_64-pc-linux-gnu), gcc 13.3; `R CMD check --as-cran`
 * win-builder: R-devel, R-release (https://win-builder.r-project.org) [UPDATE: date and result]
 * macOS builder: R-release, arm64 (https://mac.r-project.org/macbuilder/) [UPDATE: date and result]
-* R-hub v2 (GitHub Actions): ubuntu-release, windows, macos, ubuntu-gcc12 [UPDATE: date and result]
+* R-hub v2 (GitHub Actions): linux, windows, macos, ubuntu-gcc12, clang-asan [UPDATE: date and result]
 * GitHub Actions (r-lib/actions): macOS release, Windows release, Ubuntu devel/release/oldrel-1 [UPDATE: date and result]
 
 ## R CMD check results
 
-0 errors | 0 warnings | 2 notes (local)
+0 errors | 0 warnings | 1 note (New submission) is the expected result on the external platforms. The local check reports 0 errors, 0 warnings and the following notes, all of which are environmental:
 
 * `checking CRAN incoming feasibility ... NOTE: New submission`. This is the first release.
 
-* `checking for future file timestamps ... NOTE: unable to verify current time`. The local check machine has no access to the time server; the note does not occur on win-builder or R-hub.
+* `checking for future file timestamps ... NOTE: unable to verify current time`. The local check machine has no access to the time server.
 
-* `checking compilation flags used ... NOTE: Compilation used the following non-portable flag(s): '-mno-omit-leaf-frame-pointer'`. The flag comes from the local R installation's site `Makeconf`, not from the package: `src/Makevars` sets only `PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)`. The note does not occur on win-builder or R-hub.
+* `checking compilation flags used ... NOTE: Compilation used the following non-portable flag(s): '-mno-omit-leaf-frame-pointer'`. The flag comes from the local R installation's site `Makeconf`, not from the package: `src/Makevars` sets only `PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)`.
+
+* `checking HTML version of manual ... NOTE: Skipping checking HTML validation: no command 'tidy' found` (local machine only).
+
+Should a platform report `checking installed package size ... NOTE` (the compiled Armadillo code is about 3.6 MB in `libs`), this is the usual size of a small RcppArmadillo package.
 
 ## Comments on the package
 
-* The package contains C++ code (an EM algorithm for a state-space model) through Rcpp and RcppArmadillo; no C++ standard is specified in `Makevars` (the default of the R version is used).
-* Every exported function has a documented `\value` section and runnable examples; the one `\donttest{}` block (`calibrate_delta`, post-skip calibration) is only slower, not unrunnable, and passes `--run-donttest`.
-* Functions that simulate or bootstrap accept an optional `seed` argument. When it is supplied, the caller's random-number state (`.Random.seed`) is saved and restored on exit, so the functions never change the user's random-number stream; when it is not supplied, the current stream is used and advanced as usual.
+* The package contains C++ code (an EM algorithm for a state-space model) through Rcpp and RcppArmadillo; no C++ standard is specified in `Makevars` (the default of the R version is used), and the code compiles without warnings under gcc 13 and clang with `-Wall -Wextra -pedantic`.
+* Every exported function has a documented `\value` section and runnable examples; there is no `\dontrun{}` or `\donttest{}`. Examples run in about 7 seconds in total (none above 1.2 s), the tests in about 20 seconds and the five vignettes in about 60 seconds on the local machine.
+* Functions that simulate or bootstrap accept an optional `seed` argument. When it is supplied, the caller's random-number state (`.Random.seed`) is saved and restored on exit, so the functions never change the user's random-number stream; when it is not supplied (the default), the current stream is used and advanced as usual. The package never sets a seed on its own.
 * Nothing is written to the user's file system except by `missingness_declaration(file = )` when the user gives a path; the examples and tests write only to `tempfile()`.
-* Examples run in about 10 seconds in total, the tests in about 20 seconds and the five vignettes in about 60 seconds on the local machine.
-* Spelling: `inst/WORDLIST` lists the domain terms (EMA, nonresponse, recoverability, estimand, motif codes M0-M6, author names).
+* Spelling: `inst/WORDLIST` lists the domain terms (EMA, nonresponse, recoverability, estimand, motif codes M0-M6, author names) and the DOI fragments of the Description.
 
 ## Downstream dependencies
 

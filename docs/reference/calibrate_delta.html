@@ -257,14 +257,12 @@ understates \(|\delta|\) when burden is present.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   observed statistic: 0.200 (SE 0.146)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   calibrated delta: NA   95% interval: [-Inf, Inf]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   (no crossing on the grid: the model-implied curve does not reach the observed value; widen delta_grid or report the profile band)</span>
-<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># the post-skip calibration simulates from every fitted model (slower)</span></span></span>
+<span class="r-in"><span><span class="co"># the post-skip calibration simulates from every fitted model</span></span></span>
 <span class="r-in"><span><span class="fu">calibrate_delta</span><span class="op">(</span><span class="va">prof</span>, <span class="va">sim</span><span class="op">$</span><span class="va">data</span>, method <span class="op">=</span> <span class="st">"postskip"</span>, n_sim <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Calibration of delta (NegA) by the postskip method</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   observed statistic: -0.457 (SE 0.106)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   calibrated delta: NA   95% interval: [-0.609, Inf]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   (no crossing on the grid: the model-implied curve does not reach the observed value; widen delta_grid or report the profile band)</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

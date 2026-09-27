@@ -140,8 +140,10 @@ within_fit <- function(y, x, g, w, levels_g) {
 #'   \code{n_dropped}.
 #' @references Dhaene, G., & Jochmans, K. (2015). Split-panel jackknife
 #'   estimation of fixed-effect models. \emph{The Review of Economic Studies,
-#'   82}, 991-1030. Nickell, S. (1981). Biases in dynamic models with fixed
-#'   effects. \emph{Econometrica, 49}, 1417-1426.
+#'   82}, 991-1030. \doi{10.1093/restud/rdv007}
+#'
+#'   Nickell, S. (1981). Biases in dynamic models with fixed effects.
+#'   \emph{Econometrica, 49}, 1417-1426. \doi{10.2307/1911408}
 #' @examples
 #' sim <- simulate_ema(N = 40, T = 30, motifs = "M1", seed = 1)
 #' f <- fit_pairs(sim$data, sim$vars)

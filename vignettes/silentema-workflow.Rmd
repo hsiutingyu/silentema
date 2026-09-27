@@ -41,7 +41,7 @@ sim
 head(sim$data)
 ```
 
-Four momentary states (negative affect, positive affect, stress, fatigue) follow a two-level VAR(1) with person-specific means. Prompts are skipped with a probit probability that decreases in the current level of negative affect (`delta = -1`). A passive sensor correlated .6 with negative affect is observed at every prompt, and 5% of prompts are randomized probes that are always answered. Eight days of five prompts each.
+Four momentary states (negative affect, positive affect, stress, fatigue) follow a two-level VAR(1) with person-specific means. Prompts are answered with a probit probability that decreases in the current level of negative affect (`delta = -1`), so the high-negative-affect moments are the ones that get skipped. A passive sensor correlated .6 with the within-person fluctuations of negative affect is observed at every prompt, and 5% of prompts are randomized probes that are always answered. Eight days of five prompts each.
 
 ## 2. Declare a dynamic missingness graph and check recoverability
 
@@ -69,7 +69,7 @@ sg
 fatigue_check(sim$data, day = "day")
 ```
 
-Both coefficients of `R_t` are negative: the states hidden by skipped prompts were higher than the reported ones. The fatigue check shows the response persistence that burden (M3) would produce; here it is modest and arises from the autocorrelated states, as expected without burden.
+The coefficient of `R_t` on negative affect in the silence test and the sensor gap are both negative: the states hidden by skipped prompts were higher than the reported ones. The positive coefficient on positive affect is the same tilt seen through the negative contemporaneous association between the two. The fatigue check reports the response persistence that burden (M3) would produce: here the pooled contrast is inflated by between-person differences in response rate (self-censoring acts on the raw state, so persons with a high typical level respond less), while the person-mean contrast is modest and arises from the autocorrelated states, as expected without burden.
 
 ## 4. Estimate, profile, calibrate
 

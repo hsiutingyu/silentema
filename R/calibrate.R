@@ -115,10 +115,8 @@ persistence_contrast <- function(data, id = "id", time = "time", day = NULL, R =
 #' cs
 #' cs$curve
 #' calibrate_delta(prof, sim$data, method = "probe")
-#' \donttest{
-#' # the post-skip calibration simulates from every fitted model (slower)
+#' # the post-skip calibration simulates from every fitted model
 #' calibrate_delta(prof, sim$data, method = "postskip", n_sim = 5, seed = 1)
-#' }
 #' @export
 calibrate_delta <- function(profile, data, method = c("sensor", "probe", "postskip"),
                             sensor = "S", probe = "Z", id = "id", time = "time", day = NULL, R = "R",
@@ -127,7 +125,7 @@ calibrate_delta <- function(profile, data, method = c("sensor", "probe", "postsk
                             boot_grid = NULL) {
   method <- match.arg(method); boot_unit <- match.arg(boot_unit); burden <- match.arg(burden)
   if (!inherits(profile, "tilt_profile")) stop("'profile' must be a tilt_profile object")
-  vars <- profile$vars; wh <- profile$which; p <- length(vars)
+  vars <- profile$vars; wh <- profile$which
   grid <- profile$delta_grid
   pr <- make_pairs(data, vars, id, time, day, R)
   glev <- rownames(profile$fits[[1]]$intercepts)

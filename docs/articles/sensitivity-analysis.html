@@ -132,8 +132,9 @@ vector, the population parameters are a fixed point.</p>
 <p>Eighty persons, forty prompts in eight days of five, 70% compliance,
 self-censoring on negative affect with <code>delta = -1</code> (the
 propensity to respond drops by one probit unit per unit of negative
-affect), a passive sensor correlated .6 with negative affect, and 10%
-randomized probes that force a response.</p>
+affect), a passive sensor correlated .6 with the within-person
+fluctuations of negative affect, and 10% randomized probes that force a
+response.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_ema.html">simulate_ema</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">80</span>, T <span class="op">=</span> <span class="fl">40</span>, motifs <span class="op">=</span> <span class="st">"M2"</span>, compliance <span class="op">=</span> <span class="fl">0.7</span>, delta <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>,</span>
 <span>                    sensor_cor <span class="op">=</span> <span class="fl">0.6</span>, p_probe <span class="op">=</span> <span class="fl">0.10</span>, days <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">21</span><span class="op">)</span></span>
@@ -159,7 +160,9 @@ estimator of <code><a href="../reference/fit_pairs.html">fit_pairs()</a></code>.
 <p>Treating the skips as ignorable attenuates the autoregression of the
 self-censored variable (skipping the high moments cuts off the upper
 part of the trajectories); tilting at the true value moves the estimate
-toward the population value. The same holds for the person means:</p>
+toward the population value. The same holds for the means of the
+variables that the tilt touches (negative affect and, through their
+associations with it, positive affect and stress):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>untilted <span class="op">=</span> <span class="va">f0</span><span class="op">$</span><span class="va">mu</span>, tilted <span class="op">=</span> <span class="va">f1</span><span class="op">$</span><span class="va">mu</span>, truth <span class="op">=</span> <span class="fu"><a href="../reference/default_params.html">default_params</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">mu</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              NegA     PosA   Stress  Fatigue</span></span>
@@ -276,10 +279,15 @@ what a person would have reported at a skipped prompt is constrained by
 the neighboring answered prompts. The worst-case bounds of
 <code><a href="../reference/bounds_support.html">bounds_support()</a></code>, which allow every skipped value to lie
 anywhere on the response scale, ignore that information and are much
-wider:</p>
+wider. The comparison below is for the mean of negative affect: the
+range of the between-person mean over the plausible interval against the
+widths of the per-person support bounds on a 1 to 7 scale (the simulated
+states are unbounded, so the scale is nominal here).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bounds_support.html">bounds_support</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">data</span>, <span class="va">sim</span><span class="op">$</span><span class="va">vars</span>, L <span class="op">=</span> <span class="fl">1</span>, U <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">b</span><span class="op">$</span><span class="va">upper</span><span class="op">[</span><span class="va">b</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"NegA"</span><span class="op">]</span> <span class="op">-</span> <span class="va">b</span><span class="op">$</span><span class="va">lower</span><span class="op">[</span><span class="va">b</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"NegA"</span><span class="op">]</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">prof</span><span class="op">$</span><span class="va">mu</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">prof</span><span class="op">$</span><span class="va">delta_grid</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="fl">0.5</span>, <span class="st">"NegA"</span><span class="op">]</span><span class="op">)</span>          <span class="co"># identified set of the mean over [-1.5, -0.5]</span></span>
+<span><span class="co">#&gt; [1] 2.138565 2.474371</span></span>
+<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bounds_support.html">bounds_support</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">data</span>, <span class="va">sim</span><span class="op">$</span><span class="va">vars</span>, L <span class="op">=</span> <span class="fl">1</span>, U <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">b</span><span class="op">$</span><span class="va">upper</span><span class="op">[</span><span class="va">b</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"NegA"</span><span class="op">]</span> <span class="op">-</span> <span class="va">b</span><span class="op">$</span><span class="va">lower</span><span class="op">[</span><span class="va">b</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"NegA"</span><span class="op">]</span><span class="op">)</span>   <span class="co"># per-person support-bound widths</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
 <span><span class="co">#&gt;   0.000   1.050   1.650   1.802   2.438   4.350</span></span></code></pre></div>
 </div>
@@ -331,10 +339,11 @@ every grid point.</p>
 <span><span class="co">#&gt;   calibrated delta: -1.004   95% interval: [-Inf, -0.353]</span></span></code></pre></div>
 <p>With 10% probes the contrast is estimated with less precision than
 the sensor gap, and one end of the interval is open (<code>-Inf</code>):
-the lower confidence limit of the observed contrast lies beyond what the
-model implies anywhere on the grid. An open end is reported as such
-rather than clipped; widening the grid would close it if the curve keeps
-rising.</p>
+one confidence limit of the observed contrast (here the upper one,
+because the probe contrast grows with the strength of self-censoring)
+lies beyond the largest value the model implies anywhere on the grid. An
+open end is reported as such rather than clipped; widening the grid
+would close it if the curve keeps rising.</p>
 </div>
 <div class="section level3">
 <h3 id="from-the-post-skip-contrast">From the post-skip contrast<a class="anchor" aria-label="anchor" href="#from-the-post-skip-contrast"></a>
@@ -344,8 +353,7 @@ test itself can be calibrated: data are simulated from the fitted tilt
 model at every grid value (<code>n_sim</code> data sets each), the
 silence test is run on them, and the model-implied contrast is compared
 with the observed one. This calibration needs no extra channel but
-relies entirely on the functional form, and it is the least precise of
-the three.</p>
+relies entirely on the functional form.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calibrate_delta.html">calibrate_delta</a></span><span class="op">(</span><span class="va">prof</span>, <span class="va">sim</span><span class="op">$</span><span class="va">data</span>, method <span class="op">=</span> <span class="st">"postskip"</span>, day <span class="op">=</span> <span class="st">"day"</span>, n_sim <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">ck</span></span>
@@ -370,12 +378,14 @@ Yu (2026) found as well.</p>
 <span><span class="co">#&gt; 2    probe -1.0035532     -Inf -0.3532352</span></span>
 <span><span class="co">#&gt; 3 postskip -1.9815965     -Inf -0.8478301</span></span></code></pre></div>
 <p>All three intervals contain the generating value of -1. The sensor
-calibration is the most precise, the probe calibration is less precise
-with 10% probes, and the post-skip calibration is the least precise;
-this ordering is what the simulation studies of Yu (2026) report. When
-several calibrations are available, report them all with their sources
-and let the plausible interval for the sensitivity analysis cover their
-union rather than the tightest one.</p>
+calibration is the most precise; the probe (10% probes) and post-skip
+calibrations are much less precise, and both are open on one side here.
+In the simulation studies of Yu (2026) the post-skip calibration is less
+variable than the probe calibration but biased toward stronger
+self-censoring, whereas the sensor and probe calibrations are unbiased.
+When several calibrations are available, report them all with their
+sources and let the plausible interval for the sensitivity analysis
+cover their union rather than the tightest one.</p>
 </div>
 <div class="section level3">
 <h3 id="burden-together-with-self-censoring">Burden together with self-censoring<a class="anchor" aria-label="anchor" href="#burden-together-with-self-censoring"></a>

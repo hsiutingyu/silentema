@@ -231,7 +231,6 @@ recoverability <- function(g, t = 3L) {
   X <- function(k) paste0("X", k); R <- function(k) paste0("R", k)
   pl <- intersect(c("eta", "zeta"), g$nodes)         # person-level latents
   Cobs <- if (g$context == "observed") paste0("C", t) else character(0)
-  Ct <- if (g$context != "none") paste0("C", t) else character(0)
   rows <- list()
   push <- function(estimand, ok, estimator, cond) rows[[length(rows) + 1L]] <<-
     data.frame(estimand = estimand, recoverable = ok, estimator = estimator, condition = cond,

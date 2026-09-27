@@ -52,7 +52,8 @@ partial_cors <- function(S, precision = FALSE) {
 #' @examples
 #' p <- default_params()
 #' p$Phi
-#' round(partial_cors(p$Psi), 2)   # contemporaneous network: -.30, .30, -.20
+#' # contemporaneous network: NegA--PosA -.30, NegA--Stress .30, Stress--Fatigue .20
+#' round(partial_cors(p$Psi), 2)
 #' @export
 default_params <- function() {
   Phi <- matrix(c(0.40, 0.00, 0.15, 0.00,
@@ -111,7 +112,11 @@ default_params <- function() {
 #'   propensity after an answered prompt exceeds that after a skipped prompt
 #'   by \code{kappa_R} probit units.
 #' @param burden Coefficient of a linear time trend in the response model
-#'   (M3, declining compliance); the trend runs from -0.5 to 0.5 over the study.
+#'   (M3); the term enters as \code{burden * trend}, where the trend runs from
+#'   -0.5 to 0.5 over the burn-in and the recorded prompts together, so a
+#'   negative value gives declining compliance over the study and the realized
+#'   change over the recorded prompts is about \code{burden * T / (T + burnin)}
+#'   probit units.
 #' @param rho_propensity Correlation between the person-level response
 #'   propensity and the person's mean on the first variable (M4).
 #' @param sd_propensity Standard deviation of the person-level propensity
@@ -131,7 +136,8 @@ default_params <- function() {
 #'   answered and a skipped predecessor is \code{rho_react}; a scalar applies
 #'   to the first variable.
 #' @param sensor_cor Correlation between an always-observed sensor channel
-#'   and the first state variable; \code{NULL} for no sensor.
+#'   and the within-person fluctuation of the first state variable (its
+#'   deviation from the person mean, standardized); \code{NULL} for no sensor.
 #' @param p_probe Probability that a prompt is a randomized probe that forces a
 #'   response; \code{0} for no probes.
 #' @param burnin Number of burn-in prompts discarded before recording.
@@ -147,8 +153,8 @@ default_params <- function() {
 #'   (the state columns without deletion, with \code{id} and \code{time}),
 #'   \code{mu_i} (the true person means), \code{alpha0} (the calibrated
 #'   response intercept), \code{a_i} (the person propensities, M4),
-#'   \code{params}, \code{motifs}, \code{settings} (every argument value) and
-#'   \code{vars}. It has a \code{print} method.
+#'   \code{params}, \code{motifs}, \code{settings} (the design and the
+#'   response-model arguments) and \code{vars}. It has a \code{print} method.
 #' @seealso \code{\link{dm_graph}} for the same motifs as a graph,
 #'   \code{\link{simulate_from_fit}} to simulate from a fitted model,
 #'   \code{\link{default_params}}.

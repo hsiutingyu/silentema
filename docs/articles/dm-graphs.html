@@ -377,9 +377,12 @@ matter in practice.</p>
 <strong>M0, M1, M3, M4 and their combinations are
 recoverable.</strong> Skipping may depend on the previous state, on the
 previous response, or on a person’s stable propensity, and the answered
-adjacent pairs with person intercepts still recover the dynamics. The
-only casualty is the prompt-weighted between-person law, which is biased
-whenever the response rate depends on a person’s states or on
+adjacent pairs with person intercepts still recover the dynamics. Two
+casualties remain: under M1 (alone or combined) the observed
+within-person mean is biased, because skipping depends on the previous
+state, so the person mean must be recovered from the dynamics; and the
+prompt-weighted between-person law is biased under M1 and M4, whenever
+the response rate depends on a person’s states or on
 <code>zeta</code>.</li>
 <li>
 <strong>M2 and latent M5 are not recoverable.</strong>
@@ -401,12 +404,14 @@ the person mean must be read from the answered prompts rather than from
 the dynamics.</li>
 </ul>
 <p>The <code>silence_null</code> column shows where the silence test is
-a valid test of the recoverable class: everywhere in the recoverable
-class <em>except</em> M1 + M3, where conditioning on an answered prompt
-at <em>t + 1</em> opens a collider at <code>R_{t+1}</code>: its parents
-are <code>R_t</code> (burden) and <code>X_t</code> (lagged-state
-dependence), and <code>X_t</code> drives <code>X_{t+1}</code>. The
-report says so in words:</p>
+a valid test of the recoverable class: everywhere among M0, M1, M3, M4
+and their combinations <em>except</em> M1 + M3 (under M6 the kernel is
+recoverable, but reactivity makes the test reject by construction),
+where conditioning on an answered prompt at <em>t + 1</em> opens a
+collider at <code>R_{t+1}</code>: its parents are <code>R_t</code>
+(burden) and <code>X_t</code> (lagged-state dependence), and
+<code>X_t</code> drives <code>X_{t+1}</code>. The report says so in
+words:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">r13</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/recoverability.html">recoverability</a></span><span class="op">(</span><span class="fu"><a href="../reference/dm_graph.html">dm_graph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M1"</span>, <span class="st">"M3"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r13</span><span class="op">$</span><span class="va">estimator</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"silence"</span>, <span class="va">r13</span><span class="op">$</span><span class="va">estimand</span><span class="op">)</span><span class="op">]</span></span>

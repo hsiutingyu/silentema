@@ -76,5 +76,5 @@ c(fiml = fit_fiml(sim2$data, sim2$vars)$Phi[1, 1],
 \references{
 Shumway, R. H., & Stoffer, D. S. (1982). An approach to time
   series smoothing and forecasting using the EM algorithm. \emph{Journal of
-  Time Series Analysis, 3}, 253-264.
+  Time Series Analysis, 3}, 253-264. \doi{10.1111/j.1467-9892.1982.tb00349.x}
 }

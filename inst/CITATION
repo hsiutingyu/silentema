@@ -1,5 +1,3 @@
-citHeader("To cite silentema in publications, please cite both the article and the software:")
-
 bibentry(
   bibtype  = "Unpublished",
   title    = "What skipped prompts hide: Detecting, diagnosing, and correcting informative nonresponse in ecological momentary assessment",
@@ -7,6 +5,7 @@ bibentry(
   year     = "2026",
   note     = "Manuscript under review",
   url      = "https://osf.io/x6d2t/",
+  header   = "To cite silentema in publications, please cite both the article and the software:",
   textVersion = "Yu, H.-T. (2026). What skipped prompts hide: Detecting, diagnosing, and correcting informative nonresponse in ecological momentary assessment. Manuscript under review. https://osf.io/x6d2t/"
 )
 
@@ -15,7 +14,7 @@ bibentry(
   title    = "{silentema}: Dynamic Missingness Graphs and Sensitivity Analysis for EMA Data",
   author   = person(given = "Hsiu-Ting", family = "Yu"),
   year     = "2026",
-  note     = "R package version 1.0.0",
+  note     = paste("R package version", meta$Version),
   url      = "https://CRAN.R-project.org/package=silentema",
-  textVersion = "Yu, H.-T. (2026). silentema: Dynamic Missingness Graphs and Sensitivity Analysis for EMA Data (Version 1.0.0) [Computer software]. https://CRAN.R-project.org/package=silentema"
+  textVersion = paste0("Yu, H.-T. (2026). silentema: Dynamic Missingness Graphs and Sensitivity Analysis for EMA Data (Version ", meta$Version, ") [Computer software]. https://CRAN.R-project.org/package=silentema")
 )

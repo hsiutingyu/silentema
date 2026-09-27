@@ -63,8 +63,8 @@ sensitivity value) used as the starting point of the iteration.}
 An object of class \code{c("tilt_fit", "pairs_fit")}: a
   \code{\link{fit_pairs}} object with additional elements \code{delta},
   \code{alpha} (calibrated intercept(s)), \code{iterations},
-  \code{converged}, \code{weights}, \code{max_weight}, and \code{ess}, the
-  effective number of complete pairs \eqn{(\sum w)^2 / \sum w^2} (Kish).
+  \code{converged}, \code{weights}, \code{max_weight}, \code{propensity},
+  and \code{ess}, the effective number of complete pairs \eqn{(\sum w)^2 / \sum w^2} (Kish).
   The weights are not truncated: profiles in which \code{ess} falls far
   below the number of pairs, or in which a few pairs carry very large
   weights, rest on few observations and should be read with caution. The

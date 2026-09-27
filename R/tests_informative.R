@@ -283,7 +283,8 @@ fatigue_check <- function(data, id = "id", time = "time", day = NULL, R = "R") {
   d <- data.frame(id = rid[i + 1L], prev = Rv[i], cur = Rv[i + 1L])
   by_person <- lapply(split(d, d$id), function(s) c(a = mean(s$cur[s$prev == 1L]), s = mean(s$cur[s$prev == 0L])))
   m <- do.call(rbind, by_person)
-  q <- cut(rt, breaks = stats::quantile(rt, c(0, .25, .5, .75, 1)), include.lowest = TRUE, labels = paste0("Q", 1:4))
+  br <- unique(stats::quantile(rt, c(0, .25, .5, .75, 1)))
+  q <- if (length(br) >= 2L) cut(rt, breaks = br, include.lowest = TRUE, labels = if (length(br) == 5L) paste0("Q", 1:4) else NULL) else factor(rep("Q1", length(rt)))
   structure(list(after_answered = mean(d$cur[d$prev == 1L]), after_skipped = mean(d$cur[d$prev == 0L]),
                  difference = mean(d$cur[d$prev == 1L]) - mean(d$cur[d$prev == 0L]),
                  difference_person = mean(m[, "a"] - m[, "s"], na.rm = TRUE),

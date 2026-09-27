@@ -17,8 +17,9 @@ Description: Tools for informative nonresponse in ecological momentary assessmen
     contemporaneous networks from answered adjacent prompts with the half-panel
     jackknife of Dhaene and Jochmans (2015) <doi:10.1093/restud/rdv007>, by
     inverse-probability weighting on an observed context, and by
-    full-information maximum likelihood with the state-space EM algorithm of
-    Shumway and Stoffer (1982) <doi:10.1111/j.1467-9892.1982.tb00349.x>;
+    full-information maximum likelihood with the state-space
+    expectation-maximization (EM) algorithm of Shumway and Stoffer (1982)
+    <doi:10.1111/j.1467-9892.1982.tb00349.x>;
     profiles the estimates over a self-censoring sensitivity parameter
     (inverse-probability weighting with a fixed probit selection model whose
     intercept is calibrated to the response rate); calibrates that parameter

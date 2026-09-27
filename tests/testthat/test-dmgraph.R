@@ -11,7 +11,7 @@ test_that("dm_graph builds the expected edges", {
   expect_true(any(g3$edges[, "from"] == "R2" & g3$edges[, "to"] == "R3"))
   g4 <- dm_graph("M4")
   expect_true(all(c("U", "zeta") %in% g4$nodes))
-  g5 <- dm_graph("M5")
+  expect_message(g5 <- dm_graph("M5"), "latent context")
   expect_equal(g5$context, "latent")
   g6 <- dm_graph("M6")
   expect_true(any(g6$edges[, "from"] == "R2" & g6$edges[, "to"] == "X3"))

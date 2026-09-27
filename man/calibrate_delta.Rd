@@ -117,10 +117,8 @@ cs <- calibrate_delta(prof, sim$data, method = "sensor")
 cs
 cs$curve
 calibrate_delta(prof, sim$data, method = "probe")
-\donttest{
-# the post-skip calibration simulates from every fitted model (slower)
+# the post-skip calibration simulates from every fitted model
 calibrate_delta(prof, sim$data, method = "postskip", n_sim = 5, seed = 1)
-}
 }
 \seealso{
 \code{\link{tilt_profile}}, \code{\link{sensor_gap_test}},

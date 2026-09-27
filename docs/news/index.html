@@ -63,7 +63,7 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="silentema-100">silentema 1.0.0<a class="anchor" aria-label="anchor" href="#silentema-100"></a></h2>
-<p>First CRAN release. The statistical code is unchanged from version 0.2.1, so every result produced with 0.2.0 or 0.2.1 is reproduced exactly; the release prepares the package for CRAN, completes its documentation and fixes one display issue.</p>
+<p>First CRAN release. The statistical code is unchanged from version 0.2.1, so every estimate produced with 0.2.0 or 0.2.1 is reproduced exactly; the release prepares the package for CRAN, completes its documentation and fixes one display issue.</p>
 <ul><li>New vignettes: <code>dm-graphs</code> (the motif taxonomy, d-separation and recoverability), <code>testing-informativeness</code> (the silence test, the sensor-gap test and the fatigue check), <code>sensitivity-analysis</code> (tilting, break-even values, the three calibration designs and the missingness declaration) and <code>simulation-and-design</code> (the simulator, every motif’s parameters, design planning). The workflow vignette is revised.</li>
 <li>Every exported function documents its return value in full and has runnable examples; the documentation cites the methods (Mohan &amp; Pearl, 2021; Dhaene &amp; Jochmans, 2015; Shumway &amp; Stoffer, 1982; Cameron &amp; Miller, 2015; Manski, 2003) instead of the numbered propositions of the accompanying manuscript.</li>
 <li>Package overview (<code><a href="../reference/silentema-package.html">?silentema</a></code>) describing the workflow, the data format and the simulator.</li>
@@ -73,6 +73,8 @@
 <code>citation("silentema")</code> now points to the CRAN page of the package.</li>
 <li>American spelling throughout the documentation.</li>
 <li>Subsetting a <code>recoverability</code>, <code>silence_test</code> or <code>sensor_gap_test</code> object with <code>[</code> now returns a plain data frame; previously the class was kept and the print method showed an incomplete report. No estimate is affected.</li>
+<li>
+<code><a href="../reference/fit_fiml.html">fit_fiml()</a></code> stops with a message when persons have fewer than two prompts; <code><a href="../reference/fatigue_check.html">fatigue_check()</a></code> no longer fails when the prompt index has fewer than four distinct values.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="silentema-021">silentema 0.2.1<a class="anchor" aria-label="anchor" href="#silentema-021"></a></h2>

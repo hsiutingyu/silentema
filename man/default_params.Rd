@@ -22,5 +22,6 @@ one.
 \examples{
 p <- default_params()
 p$Phi
-round(partial_cors(p$Psi), 2)   # contemporaneous network: -.30, .30, -.20
+# contemporaneous network: NegA--PosA -.30, NegA--Stress .30, Stress--Fatigue .20
+round(partial_cors(p$Psi), 2)
 }

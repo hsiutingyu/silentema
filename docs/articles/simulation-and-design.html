@@ -151,9 +151,10 @@ different mechanisms comparable at the same response rate.</p>
 <p>The result holds the observed data (<code>data</code>, with
 <code>NA</code> at skipped prompts), the complete states before deletion
 (<code>full</code>), the true person means (<code>mu_i</code>), the
-calibrated intercept (<code>alpha0</code>) and every setting. Keeping
-<code>full</code> makes it easy to check any estimator against the
-truth:</p>
+calibrated intercept (<code>alpha0</code>) and the settings of the
+response model. Together with the population parameters in
+<code><a href="../reference/default_params.html">default_params()</a></code>, this makes it easy to check any estimator
+against the truth:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_pairs.html">fit_pairs</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">data</span>, <span class="va">sim</span><span class="op">$</span><span class="va">vars</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>estimate <span class="op">=</span> <span class="va">f</span><span class="op">$</span><span class="va">Phi</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, truth <span class="op">=</span> <span class="va">p</span><span class="op">$</span><span class="va">Phi</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -199,9 +200,10 @@ variable)</td>
 <code>kappa_R</code>, <code>burden</code>
 </td>
 <td>
-<code>kappa_R (R_{t-1} - compliance)</code> and a linear time trend
-of size <code>burden</code>
-</td>
+<code>kappa_R (R_{t-1} - compliance)</code> plus
+<code>burden * trend_t</code>, the trend running from -0.5 to 0.5 over
+burn-in and study (negative <code>burden</code> = declining
+compliance)</td>
 </tr>
 <tr class="even">
 <td>M4 person propensity</td>
@@ -271,7 +273,8 @@ analysis may treat it as observed
 ignore it (latent context).</li>
 </ul>
 <p><code>days</code> adds a <code>day</code> column, which the
-estimators use to form pairs within days only.</p>
+estimators use to form pairs within days only when it is passed to them
+as <code>day = "day"</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_ema.html">simulate_ema</a></span><span class="op">(</span>N <span class="op">=</span> <span class="fl">30</span>, T <span class="op">=</span> <span class="fl">20</span>, motifs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M2"</span>, <span class="st">"M5"</span><span class="op">)</span>, delta <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, sensor_cor <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>                     p_probe <span class="op">=</span> <span class="fl">0.1</span>, rho_context <span class="op">=</span> <span class="fl">0.5</span>, days <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
@@ -349,7 +352,7 @@ and the sample size of the planned study.</p>
 <span><span class="co">#&gt; delta = -0.5     -0.018   -0.277</span></span>
 <span><span class="co">#&gt; delta = -1       -0.057   -0.444</span></span></code></pre></div>
 <p>The autoregression is attenuated and the person mean is pulled down
-(people skip their high moments) in proportion to the strength of
+(people skip their high moments), both increasingly with the strength of
 self-censoring, with the mean the more damaged of the two. With 20
 replications the Monte Carlo standard error of the bias in the
 autoregression is about .01, so small entries should be read as

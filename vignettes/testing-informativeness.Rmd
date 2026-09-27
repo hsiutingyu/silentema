@@ -27,7 +27,7 @@ Two tests and one descriptive check are available.
 | `sensor_gap_test()` | `S_t ~ X_{t-1} + R_t` over prompts with an answered predecessor | all recoverable motifs, including M1 + M3 | an always-observed sensor |
 | `fatigue_check()` | response rate after an answered vs a skipped prompt; by study quarter | (descriptive) | the response indicators |
 
-All three use person fixed effects (within-person demeaning), so stable between-person differences in level or in compliance cannot produce a spurious result.
+The two tests use person fixed effects (within-person demeaning), so stable between-person differences in level or in compliance cannot produce a spurious result. The fatigue check reports both a pooled contrast, which between-person differences in compliance inflate, and the mean of the person-specific contrasts, which they do not.
 
 ## The silence test
 
@@ -48,7 +48,7 @@ attr(st, "joint")
 c(triples = attr(st, "n_triples"), skipped_middle = attr(st, "n_skipped"))
 ```
 
-Under a recoverable mechanism the coefficients are near zero:
+Under a recoverable mechanism the coefficients are near zero and the joint test does not reject:
 
 ```{r silence-null}
 sim1 <- simulate_ema(N = 60, T = 40, motifs = "M1", compliance = 0.7, seed = 1)
@@ -111,7 +111,7 @@ sensor_gap_test(sim1s$data, sim1s$vars, sensor = "S")
 
 ## The fatigue check
 
-`fatigue_check()` is descriptive. It reports the response rate after an answered and after a skipped prompt, pooled and as the mean of the person-specific differences, and the response rate by study quarter. A large persistence contrast and a declining rate over quarters are what burden (M3) produces; some serial dependence in `R` also arises under M1, M2 and M4 through the autocorrelated states and the person propensities, so the check does not discriminate M3 from the other motifs by itself.
+`fatigue_check()` is descriptive. It reports the response rate after an answered and after a skipped prompt, pooled and as the mean of the person-specific differences, and the response rate by study quarter. A large persistence contrast (the `kappa_R` term of the simulator) and, when compliance drifts over the study (a negative `burden` term), a declining rate over quarters are what burden (M3) produces; the example below uses `kappa_R` only, so the quarterly rates stay flat. Some serial dependence in `R` also arises under M1, M2 and M4 through the autocorrelated states and the person propensities, so the check does not discriminate M3 from the other motifs by itself.
 
 ```{r fatigue}
 sim3 <- simulate_ema(N = 60, T = 40, motifs = "M3", compliance = 0.7, kappa_R = 1, seed = 4)
@@ -137,7 +137,7 @@ rej <- function(motifs, reps = 60, ...) {
 c(M0 = rej("M0"), M1 = rej("M1"), M2 = rej("M2", delta = -1))
 ```
 
-With 60 replications the Monte Carlo standard error of a rejection rate near .05 is about .03, so the first two numbers are compatible with the nominal level; the third shows the power the test has at this sample size and tilt. In the simulation studies of Yu (2026) (500 replications per cell, *N* = 100, *T* = 56) the rejection rate under the recoverable motifs stayed within Monte Carlo error of the nominal level, with a mild excess at 85% compliance attributable to the small-sample behavior of cluster-robust inference.
+With 60 replications the Monte Carlo standard error of a rejection rate near .05 is about .03, so the first two numbers are compatible with the nominal level; the third shows the power the test has at this sample size and tilt. In the simulation studies of Yu (2026) (500 replications per cell, *N* = 100, *T* = 56) the rejection rate under the recoverable motifs stayed between 4% and 7% with two mild excesses (8.8% under burden at 70% compliance and 7.4% under lagged-state dependence at 85%), compatible with Monte Carlo error and the known anticonservatism of cluster-robust standard errors.
 
 ## What to do with a rejection
 

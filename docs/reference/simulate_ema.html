@@ -150,7 +150,11 @@ by <code>kappa_R</code> probit units.</p></dd>
 
 <dt>burden</dt>
 <dd><p>Coefficient of a linear time trend in the response model
-(M3, declining compliance); the trend runs from -0.5 to 0.5 over the study.</p></dd>
+(M3); the term enters as <code>burden * trend</code>, where the trend runs from
+-0.5 to 0.5 over the burn-in and the recorded prompts together, so a
+negative value gives declining compliance over the study and the realized
+change over the recorded prompts is about <code>burden * T / (T + burnin)</code>
+probit units.</p></dd>
 
 
 <dt>rho_propensity</dt>
@@ -194,7 +198,8 @@ to the first variable.</p></dd>
 
 <dt>sensor_cor</dt>
 <dd><p>Correlation between an always-observed sensor channel
-and the first state variable; <code>NULL</code> for no sensor.</p></dd>
+and the within-person fluctuation of the first state variable (its
+deviation from the person mean, standardized); <code>NULL</code> for no sensor.</p></dd>
 
 
 <dt>p_probe</dt>
@@ -234,9 +239,8 @@ column is added (the response model itself does not use the day).</p></dd>
 <p><code>mu_i</code> (the true person means), <code>alpha0</code> (the calibrated
   response intercept), <code>a_i</code> (the person propensities, M4),</p>
 <p></p>
-<p><code>params</code>, <code>motifs</code>, <code>settings</code> (every argument value) and</p>
-<p></p>
-<p><code>vars</code>. It has a <code>print</code> method.</p>
+<p><code>params</code>, <code>motifs</code>, <code>settings</code> (the design and the
+  response-model arguments) and <code>vars</code>. It has a <code>print</code> method.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

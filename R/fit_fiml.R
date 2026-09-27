@@ -41,7 +41,7 @@
 #'   truth = default_params()$Phi[1, 1])
 #' @references Shumway, R. H., & Stoffer, D. S. (1982). An approach to time
 #'   series smoothing and forecasting using the EM algorithm. \emph{Journal of
-#'   Time Series Analysis, 3}, 253-264.
+#'   Time Series Analysis, 3}, 253-264. \doi{10.1111/j.1467-9892.1982.tb00349.x}
 #' @export
 fit_fiml <- function(data, vars, id = "id", time = "time", R = "R", start = NULL,
                      max_iter = 200L, tol = 1e-5, verbose = FALSE) {
@@ -52,6 +52,7 @@ fit_fiml <- function(data, vars, id = "id", time = "time", R = "R", start = NULL
   ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]
   ids <- unique(data[[id]]); N <- length(ids)
   Tn <- max(data[[time]]) - min(data[[time]]) + 1L
+  if (Tn < 2L) stop("at least two prompts per person are needed")
   t0 <- min(data[[time]])
   Y <- array(NaN, c(p, Tn, N)); Rm <- matrix(0L, Tn, N)
   Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))

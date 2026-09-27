@@ -30,8 +30,8 @@
 #' @return An object of class \code{c("tilt_fit", "pairs_fit")}: a
 #'   \code{\link{fit_pairs}} object with additional elements \code{delta},
 #'   \code{alpha} (calibrated intercept(s)), \code{iterations},
-#'   \code{converged}, \code{weights}, \code{max_weight}, and \code{ess}, the
-#'   effective number of complete pairs \eqn{(\sum w)^2 / \sum w^2} (Kish).
+#'   \code{converged}, \code{weights}, \code{max_weight}, \code{propensity},
+#'   and \code{ess}, the effective number of complete pairs \eqn{(\sum w)^2 / \sum w^2} (Kish).
 #'   The weights are not truncated: profiles in which \code{ess} falls far
 #'   below the number of pairs, or in which a few pairs carry very large
 #'   weights, rest on few observations and should be read with caution. The
@@ -93,7 +93,6 @@ fit_tilt <- function(data, vars, delta, id = "id", time = "time", day = NULL, R 
     if (propensity == "common") {
       f <- function(a) mean(stats::pnorm((a + dm_lo) / kappa)) - mean(lo$R)
       alpha <- stats::uniroot(f, c(-30, 30), tol = 1e-8)$root
-      alpha_vec_lo <- rep(alpha, length(dm_lo))
     } else {
       # person-specific intercepts by vectorized Newton steps on the calibration equations
       G <- length(glev)
@@ -112,7 +111,6 @@ fit_tilt <- function(data, vars, delta, id = "id", time = "time", day = NULL, R 
       }
       alpha[n_g == 0] <- NA_real_
       alpha_prev <- alpha
-      alpha_vec_lo <- alpha[gi_lo]
     }
     # weights on complete pairs
     m_pair <- cI[gi_pair, , drop = FALSE] + pr$x %*% t(Phi)

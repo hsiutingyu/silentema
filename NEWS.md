@@ -1,7 +1,7 @@
 # silentema 1.0.0
 
 First CRAN release. The statistical code is unchanged from version 0.2.1, so
-every result produced with 0.2.0 or 0.2.1 is reproduced exactly; the release
+every estimate produced with 0.2.0 or 0.2.1 is reproduced exactly; the release
 prepares the package for CRAN, completes its documentation and fixes one
 display issue.
 
@@ -26,6 +26,9 @@ display issue.
 * Subsetting a `recoverability`, `silence_test` or `sensor_gap_test` object
   with `[` now returns a plain data frame; previously the class was kept and
   the print method showed an incomplete report. No estimate is affected.
+* `fit_fiml()` stops with a message when persons have fewer than two prompts;
+  `fatigue_check()` no longer fails when the prompt index has fewer than four
+  distinct values.
 
 # silentema 0.2.1
 

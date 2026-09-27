@@ -31,7 +31,7 @@ an inverse-probability weight with a stabilized numerator, and the within-person
 
 ## The running example
 
-Eighty persons, forty prompts in eight days of five, 70% compliance, self-censoring on negative affect with `delta = -1` (the propensity to respond drops by one probit unit per unit of negative affect), a passive sensor correlated .6 with negative affect, and 10% randomized probes that force a response.
+Eighty persons, forty prompts in eight days of five, 70% compliance, self-censoring on negative affect with `delta = -1` (the propensity to respond drops by one probit unit per unit of negative affect), a passive sensor correlated .6 with the within-person fluctuations of negative affect, and 10% randomized probes that force a response.
 
 ```{r sim}
 sim <- simulate_ema(N = 80, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
@@ -50,7 +50,7 @@ f1 <- fit_tilt(sim$data, sim$vars, delta = -1, day = "day", probe = "Z")
 rbind(untilted = f0$Phi[1, ], tilted = f1$Phi[1, ], truth = truth[1, ])
 ```
 
-Treating the skips as ignorable attenuates the autoregression of the self-censored variable (skipping the high moments cuts off the upper part of the trajectories); tilting at the true value moves the estimate toward the population value. The same holds for the person means:
+Treating the skips as ignorable attenuates the autoregression of the self-censored variable (skipping the high moments cuts off the upper part of the trajectories); tilting at the true value moves the estimate toward the population value. The same holds for the means of the variables that the tilt touches (negative affect and, through their associations with it, positive affect and stress):
 
 ```{r means}
 rbind(untilted = f0$mu, tilted = f1$mu, truth = default_params()$mu)
@@ -102,11 +102,12 @@ be[be$coef %in% c("NegA<-NegA", "Stress<-NegA", "PosA<-NegA"), ]
 
 A coefficient whose identified set stays on one side of zero over the plausible interval is robust to self-censoring of that strength; one whose sign flips inside the interval is not. The significance-flip column is included because readers ask for it, but it is a dichotomous criterion and the band is the more informative summary.
 
-The identified sets are narrow because the tilt uses the dynamics: what a person would have reported at a skipped prompt is constrained by the neighboring answered prompts. The worst-case bounds of `bounds_support()`, which allow every skipped value to lie anywhere on the response scale, ignore that information and are much wider:
+The identified sets are narrow because the tilt uses the dynamics: what a person would have reported at a skipped prompt is constrained by the neighboring answered prompts. The worst-case bounds of `bounds_support()`, which allow every skipped value to lie anywhere on the response scale, ignore that information and are much wider. The comparison below is for the mean of negative affect: the range of the between-person mean over the plausible interval against the widths of the per-person support bounds on a 1 to 7 scale (the simulated states are unbounded, so the scale is nominal here).
 
 ```{r bounds}
+range(prof$mu[abs(prof$delta_grid + 1) <= 0.5, "NegA"])          # identified set of the mean over [-1.5, -0.5]
 b <- bounds_support(sim$data, sim$vars, L = 1, U = 7)
-summary(b$upper[b$variable == "NegA"] - b$lower[b$variable == "NegA"])
+summary(b$upper[b$variable == "NegA"] - b$lower[b$variable == "NegA"])   # per-person support-bound widths
 ```
 
 ## Calibrating the sensitivity value: `calibrate_delta()`
@@ -134,11 +135,11 @@ cp <- calibrate_delta(prof, sim$data, method = "probe", day = "day")
 cp
 ```
 
-With 10% probes the contrast is estimated with less precision than the sensor gap, and one end of the interval is open (`-Inf`): the lower confidence limit of the observed contrast lies beyond what the model implies anywhere on the grid. An open end is reported as such rather than clipped; widening the grid would close it if the curve keeps rising.
+With 10% probes the contrast is estimated with less precision than the sensor gap, and one end of the interval is open (`-Inf`): one confidence limit of the observed contrast (here the upper one, because the probe contrast grows with the strength of self-censoring) lies beyond the largest value the model implies anywhere on the grid. An open end is reported as such rather than clipped; widening the grid would close it if the curve keeps rising.
 
 ### From the post-skip contrast
 
-Without a sensor or probes, the post-skip contrast of the silence test itself can be calibrated: data are simulated from the fitted tilt model at every grid value (`n_sim` data sets each), the silence test is run on them, and the model-implied contrast is compared with the observed one. This calibration needs no extra channel but relies entirely on the functional form, and it is the least precise of the three.
+Without a sensor or probes, the post-skip contrast of the silence test itself can be calibrated: data are simulated from the fitted tilt model at every grid value (`n_sim` data sets each), the silence test is run on them, and the model-implied contrast is compared with the observed one. This calibration needs no extra channel but relies entirely on the functional form.
 
 ```{r cal-postskip}
 ck <- calibrate_delta(prof, sim$data, method = "postskip", day = "day", n_sim = 5, seed = 2)
@@ -154,7 +155,7 @@ data.frame(method = c("sensor", "probe", "postskip"),
            upper = c(cs$interval[2], cp$interval[2], ck$interval[2]))
 ```
 
-All three intervals contain the generating value of -1. The sensor calibration is the most precise, the probe calibration is less precise with 10% probes, and the post-skip calibration is the least precise; this ordering is what the simulation studies of Yu (2026) report. When several calibrations are available, report them all with their sources and let the plausible interval for the sensitivity analysis cover their union rather than the tightest one.
+All three intervals contain the generating value of -1. The sensor calibration is the most precise; the probe (10% probes) and post-skip calibrations are much less precise, and both are open on one side here. In the simulation studies of Yu (2026) the post-skip calibration is less variable than the probe calibration but biased toward stronger self-censoring, whereas the sensor and probe calibrations are unbiased. When several calibrations are available, report them all with their sources and let the plausible interval for the sensitivity analysis cover their union rather than the tightest one.
 
 ### Burden together with self-censoring
 
