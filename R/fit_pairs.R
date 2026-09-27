@@ -6,15 +6,49 @@ check_columns <- function(data, cols, what = "data") {
   invisible(TRUE)
 }
 
+# Internal: the response indicator as a validated integer 0/1 vector. When the named column exists it
+# must be 0/1 without NA and the state columns must be complete at answered prompts; when the default
+# name "R" is absent, a prompt counts as answered when all state columns are non-missing.
+response_indicator <- function(data, vars, R = "R", what = "data") {
+  if (!is.null(R) && R %in% names(data)) {
+    Rv <- data[[R]]
+    if (anyNA(Rv) || !all(Rv %in% c(0, 1))) stop("'", R, "' must contain only 0 and 1, without NA")
+    Rv <- as.integer(Rv)
+    if (length(vars) && !all(stats::complete.cases(data[Rv == 1L, vars, drop = FALSE])))
+      stop("state columns contain NA at prompts with ", R, " = 1 (item-level missingness): set ", R,
+           " to 0 at those prompts, or drop the column so that a prompt counts as answered when all state columns are non-missing")
+    return(Rv)
+  }
+  if (!is.null(R) && !identical(R, "R")) stop("column '", R, "' not found in '", what, "'")
+  if (!length(vars)) stop("a response-indicator column '", R, "' is needed")
+  as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
+}
+
+# Internal: the prompt index must be an integer index
+check_time <- function(data, time) {
+  if (!is.numeric(data[[time]]) || anyNA(data[[time]]) || any(abs(data[[time]] - round(data[[time]])) > 1e-8))
+    stop("'", time, "' must be an integer prompt index (1, 2, 3, ... within person, without NA); see ?make_pairs")
+  invisible(TRUE)
+}
+
 #' Build adjacent prompt pairs from long experience-sampling data
+#'
+#' A complete pair is two adjacent scheduled prompts of one person (within a
+#' day, when a day column is given) that were both answered. Complete pairs are
+#' the building block of every estimator in the package: \code{\link{fit_pairs}},
+#' \code{\link{fit_tilt}} and \code{\link{fit_ipw}} regress the states at the
+#' second prompt on the states at the first. This function forms the pairs once
+#' and also collects the prompts whose predecessor was answered, which the
+#' response models of the weighted estimators use.
 #'
 #' @param data Long data frame with one row per scheduled prompt.
 #' @param vars Names of the state columns.
 #' @param id,time Names of the person and prompt-index columns.
 #' @param day Optional name of a day column; pairs are formed only within a
 #'   day (the overnight gap is not a lag-1 transition).
-#' @param R Optional name of the response-indicator column. If missing, a
-#'   prompt counts as answered when all \code{vars} are non-missing.
+#' @param R Name of the response-indicator column (0/1, no \code{NA}). If the
+#'   default name is not among the columns of \code{data}, a prompt counts as
+#'   answered when all \code{vars} are non-missing; any other name must exist.
 #' @details The \code{time} column must be an integer prompt index that
 #'   increases by one from one scheduled prompt to the next within a person
 #'   (and within a day when \code{day} is given); two rows whose indices differ
@@ -39,13 +73,12 @@ check_columns <- function(data, cols, what = "data") {
 #' nrow(make_pairs(simd$data, simd$vars, day = "day")$y)
 #' @export
 make_pairs <- function(data, vars, id = "id", time = "time", day = NULL, R = "R") {
-  check_columns(data, c(vars, id, time, day, if (!is.null(R) && R %in% names(data)) R))
-  if (!is.numeric(data[[time]]) || any(abs(data[[time]] - round(data[[time]])) > 1e-8, na.rm = TRUE))
-    stop("'", time, "' must be an integer prompt index (1, 2, 3, ... within person); see ?make_pairs")
+  check_columns(data, c(vars, id, time, day))
+  check_time(data, time)
+  Rv <- response_indicator(data, vars, R)
   ord <- order(data[[id]], data[[time]])
-  data <- data[ord, , drop = FALSE]
+  data <- data[ord, , drop = FALSE]; Rv <- Rv[ord]
   rid <- data[[id]]; rt <- data[[time]]
-  Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
   n <- nrow(data)
   same_person <- rid[-1] == rid[-n]
   consecutive <- rt[-1] == rt[-n] + 1
@@ -85,7 +118,7 @@ within_fit <- function(y, x, g, w, levels_g) {
   list(Phi = Phi, ybar = ybar, xbar = xbar, res = res, infl = infl, sw = sw, n_i = as.numeric(table(gf)))
 }
 
-#' Within-person VAR(1) estimated from complete adjacent prompts
+#' Within-person VAR(1) estimated from complete adjacent pairs
 #'
 #' Estimates the lagged-coefficient matrix \eqn{\Phi}, the innovation
 #' covariance \eqn{\Psi}, person intercepts and person means from complete
@@ -94,15 +127,18 @@ within_fit <- function(y, x, g, w, levels_g) {
 #' the recoverable motifs (M0, M1, M3, M4 and their combinations, and M5 with
 #' an observed context; see \code{\link{recoverability}}). Optional weights
 #' turn it into the inverse-probability-weighted or tilted estimator. By
-#' default the split-panel jackknife of Dhaene and Jochmans (2015) removes the
-#' finite-\eqn{T} (Nickell) bias of the within estimator of \eqn{\Phi}.
+#' default the half-panel (split-panel) jackknife of Dhaene and Jochmans (2015)
+#' removes the finite-\eqn{T} (Nickell) bias of the within estimator of
+#' \eqn{\Phi}.
 #'
 #' @inheritParams make_pairs
 #' @param weights Optional non-negative weights, one per complete pair (in the
 #'   order returned by \code{\link{make_pairs}}).
 #' @param pairs Optional precomputed result of \code{\link{make_pairs}}.
 #' @param min_pairs Persons with fewer complete pairs are dropped from the
-#'   between-person summaries (they still contribute to \eqn{\Phi}).
+#'   between-person summaries (they still contribute to \eqn{\Phi}). A person
+#'   can have at most \eqn{T - 1} pairs, so \code{min_pairs} must be smaller
+#'   than the number of prompts per person.
 #' @param bias_correct Logical; apply the half-panel jackknife to \eqn{\Phi},
 #'   \eqn{\Psi}, the person intercepts and means, and the between-person
 #'   covariance (all of which carry \eqn{O(1/T)} incidental-parameter bias).
@@ -125,7 +161,8 @@ within_fit <- function(y, x, g, w, levels_g) {
 #'   prompts), \code{Sigma_mu_obs}, the uncorrected (least-squares) versions
 #'   \code{Phi_ls}, \code{Psi_ls}, \code{mu_ls}, \code{Sigma_mu_ls},
 #'   \code{vcov_Phi} (cluster-robust covariance of the stacked rows of
-#'   \code{Phi}), \code{n_pairs}, \code{n_persons}, \code{n_pairs_person},
+#'   \code{Phi}), \code{n_pairs}, \code{n_persons} (persons with at least one
+#'   complete pair), \code{n_pairs_person},
 #'   \code{n_dropped}, \code{weights}, \code{pairs} (the
 #'   \code{\link{make_pairs}} object), \code{vars}, \code{residuals} and
 #'   \code{bias_correct}. Methods: \code{print}, \code{\link{summary.pairs_fit}},
@@ -168,7 +205,9 @@ fit_pairs <- function(data, vars, id = "id", time = "time", day = NULL, R = "R",
     x <- cbind(x, Cm)
   }
   n <- nrow(y)
-  if (n < 2 * p + 2) stop("Too few complete pairs")
+  if (n < 2 * p + 2)
+    stop(sprintf("Too few complete pairs: %d of %d prompts form a complete adjacent pair (at least %d are needed); check that '%s' is a consecutive integer prompt index within person%s",
+                 n, pr$n_prompts, 2L * p + 2L, time, if (!is.null(day)) " and day" else ""))
   w <- if (is.null(weights)) rep(1, n) else as.numeric(weights)
   if (length(w) != n) stop("weights must have one entry per complete pair")
   if (any(!is.finite(w)) || any(w < 0)) stop("weights must be finite and non-negative")
@@ -195,6 +234,9 @@ fit_pairs <- function(data, vars, id = "id", time = "time", day = NULL, R = "R",
   full <- within_fit(y, x, g, w, levels_g)
   n_i <- full$n_i
   keep <- n_i >= min_pairs
+  if (!any(keep))
+    warning("no person has at least min_pairs = ", min_pairs, " complete pairs (the maximum is ", max(n_i),
+            "): the between-person summaries are NA; lower 'min_pairs'")
   est <- derive(full, w, keep)
   est_ls <- est
   if (bias_correct) {
@@ -257,15 +299,18 @@ print.pairs_fit <- function(x, digits = 3, ...) {
 #' Cluster-robust (by person) standard errors with a \eqn{t(G - 1)} reference
 #' distribution, \eqn{G} being the number of persons, as in
 #' \code{\link{silence_test}}. With few persons (single-case or small
-#' samples) the cluster-robust intervals are unreliable; use a day-block
-#' bootstrap instead.
+#' samples) the cluster-robust intervals are unreliable; a bootstrap over days
+#' of the estimates (refitting \code{\link{fit_pairs}} on resampled day blocks)
+#' is the alternative, and \code{\link{silence_test}} implements it for the
+#' test.
 #' @param object A \code{pairs_fit}.
 #' @param level Confidence level.
 #' @param ... Ignored.
 #' @return \code{summary} returns a data frame with one row per lagged
 #'   coefficient (\code{"Y<-X"} names the effect of \code{X} at \eqn{t-1} on
 #'   \code{Y} at \eqn{t}) and the columns \code{coef}, \code{estimate},
-#'   \code{se}, \code{lower}, \code{upper}, \code{z} and \code{p}.
+#'   \code{se}, \code{lower}, \code{upper}, \code{z} (the ratio of the
+#'   estimate to its standard error, referred to \eqn{t(G - 1)}) and \code{p}.
 #' @references Cameron, A. C., & Miller, D. L. (2015). A practitioner's guide
 #'   to cluster-robust inference. \emph{Journal of Human Resources, 50},
 #'   317-372. \doi{10.3368/jhr.50.2.317}

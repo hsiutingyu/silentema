@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_pairs.R
 \name{fit_pairs}
 \alias{fit_pairs}
-\title{Within-person VAR(1) estimated from complete adjacent prompts}
+\title{Within-person VAR(1) estimated from complete adjacent pairs}
 \usage{
 fit_pairs(
   data,
@@ -28,8 +28,9 @@ fit_pairs(
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{weights}{Optional non-negative weights, one per complete pair (in the
 order returned by \code{\link{make_pairs}}).}
@@ -37,7 +38,9 @@ order returned by \code{\link{make_pairs}}).}
 \item{pairs}{Optional precomputed result of \code{\link{make_pairs}}.}
 
 \item{min_pairs}{Persons with fewer complete pairs are dropped from the
-between-person summaries (they still contribute to \eqn{\Phi}).}
+between-person summaries (they still contribute to \eqn{\Phi}). A person
+can have at most \eqn{T - 1} pairs, so \code{min_pairs} must be smaller
+than the number of prompts per person.}
 
 \item{bias_correct}{Logical; apply the half-panel jackknife to \eqn{\Phi},
 \eqn{\Psi}, the person intercepts and means, and the between-person
@@ -64,7 +67,8 @@ An object of class \code{"pairs_fit"}: a list with \code{Phi}
   prompts), \code{Sigma_mu_obs}, the uncorrected (least-squares) versions
   \code{Phi_ls}, \code{Psi_ls}, \code{mu_ls}, \code{Sigma_mu_ls},
   \code{vcov_Phi} (cluster-robust covariance of the stacked rows of
-  \code{Phi}), \code{n_pairs}, \code{n_persons}, \code{n_pairs_person},
+  \code{Phi}), \code{n_pairs}, \code{n_persons} (persons with at least one
+  complete pair), \code{n_pairs_person},
   \code{n_dropped}, \code{weights}, \code{pairs} (the
   \code{\link{make_pairs}} object), \code{vars}, \code{residuals} and
   \code{bias_correct}. Methods: \code{print}, \code{\link{summary.pairs_fit}},
@@ -78,8 +82,9 @@ estimator). This is the estimator that recovers the transition kernel under
 the recoverable motifs (M0, M1, M3, M4 and their combinations, and M5 with
 an observed context; see \code{\link{recoverability}}). Optional weights
 turn it into the inverse-probability-weighted or tilted estimator. By
-default the split-panel jackknife of Dhaene and Jochmans (2015) removes the
-finite-\eqn{T} (Nickell) bias of the within estimator of \eqn{\Phi}.
+default the half-panel (split-panel) jackknife of Dhaene and Jochmans (2015)
+removes the finite-\eqn{T} (Nickell) bias of the within estimator of
+\eqn{\Phi}.
 }
 \details{
 Person intercepts are handled by weighted within-person demeaning

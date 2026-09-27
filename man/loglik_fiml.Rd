@@ -22,12 +22,18 @@ loglik_fiml(
 
 \item{vars}{Names of the state columns.}
 
-\item{Phi, Psi, mu, Sigma_mu, Sigma0}{Parameter values.}
+\item{Phi, Psi, mu, Sigma_mu, Sigma0}{Parameter values: the \eqn{p \times p}
+lagged-coefficient matrix, the \eqn{p \times p} innovation covariance,
+the length-\eqn{p} population mean, the \eqn{p \times p} between-person
+covariance of the person means, and the \eqn{p \times p} covariance of
+the within-person deviation at the first prompt (by default the stationary
+covariance implied by \code{Phi} and \code{Psi}).}
 
 \item{id, time}{Names of the person and prompt-index columns.}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 }
 \value{
 A single number, the log-likelihood of the observed states under
@@ -35,7 +41,11 @@ A single number, the log-likelihood of the observed states under
   missing at random.
 }
 \description{
-Log-likelihood of the two-level VAR(1) at given parameters (MAR)
+Evaluates, without fitting, the likelihood that \code{\link{fit_fiml}}
+maximizes: the Gaussian likelihood of the answered states under the
+two-level VAR(1) with random person means, skipped prompts integrated out
+as missing at random. Useful for comparing fits, for profile likelihoods,
+and for checking a fit against the trace of the EM iterations.
 }
 \examples{
 sim <- simulate_ema(N = 20, T = 15, seed = 1)

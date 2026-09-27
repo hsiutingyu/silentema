@@ -20,6 +20,12 @@ stationary_cov <- function(Phi, Psi) {
 }
 
 #' Partial correlations from a covariance matrix
+#'
+#' Inverts the covariance matrix (or takes the precision matrix as given) and
+#' standardizes its negative off-diagonal elements. Applied to the innovation
+#' covariance of the VAR(1), the result is the contemporaneous network: the
+#' partial correlations of the states at the same prompt given the previous
+#' prompt and the other states.
 #' @param S A covariance (or precision, with \code{precision = TRUE}) matrix.
 #' @param precision Logical; is \code{S} already a precision matrix?
 #' @return The matrix of partial correlations (the contemporaneous network
@@ -42,7 +48,7 @@ partial_cors <- function(S, precision = FALSE) {
 #'
 #' A four-variable within-person system with autoregressive coefficients
 #' between .30 and .45, a few cross-lagged effects, an innovation covariance
-#' with a sparse contemporaneous network, and stationary variances close to
+#' with a sparse contemporaneous network, and stationary variances equal to
 #' one.
 #' @return A list with \code{Phi} (4 x 4 lagged coefficients), \code{Psi}
 #'   (innovation covariance, scaled so that the stationary variances equal

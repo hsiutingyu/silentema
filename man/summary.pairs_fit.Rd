@@ -31,7 +31,8 @@
 \code{summary} returns a data frame with one row per lagged
   coefficient (\code{"Y<-X"} names the effect of \code{X} at \eqn{t-1} on
   \code{Y} at \eqn{t}) and the columns \code{coef}, \code{estimate},
-  \code{se}, \code{lower}, \code{upper}, \code{z} and \code{p}.
+  \code{se}, \code{lower}, \code{upper}, \code{z} (the ratio of the
+  estimate to its standard error, referred to \eqn{t(G - 1)}) and \code{p}.
 
 \code{coef} returns the stacked rows of \eqn{\Phi} as a named
   vector, \code{vcov} their cluster-robust covariance matrix,
@@ -42,8 +43,10 @@
 Cluster-robust (by person) standard errors with a \eqn{t(G - 1)} reference
 distribution, \eqn{G} being the number of persons, as in
 \code{\link{silence_test}}. With few persons (single-case or small
-samples) the cluster-robust intervals are unreliable; use a day-block
-bootstrap instead.
+samples) the cluster-robust intervals are unreliable; a bootstrap over days
+of the estimates (refitting \code{\link{fit_pairs}} on resampled day blocks)
+is the alternative, and \code{\link{silence_test}} implements it for the
+test.
 }
 \examples{
 sim <- simulate_ema(N = 30, T = 20, seed = 2)

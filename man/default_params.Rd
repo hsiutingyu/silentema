@@ -16,7 +16,7 @@ A list with \code{Phi} (4 x 4 lagged coefficients), \code{Psi}
 \description{
 A four-variable within-person system with autoregressive coefficients
 between .30 and .45, a few cross-lagged effects, an innovation covariance
-with a sparse contemporaneous network, and stationary variances close to
+with a sparse contemporaneous network, and stationary variances equal to
 one.
 }
 \examples{

@@ -53,19 +53,19 @@ reference:
   - title: Package overview
     contents:
       - silentema-package
-  - title: "1. Declare and check: dynamic missingness graphs"
+  - title: "Step 1. Declare and check: dynamic missingness graphs"
     desc: Build a dm-graph from the motif taxonomy, query it, and read the recoverability report.
     contents:
       - dm_graph
       - plot.dm_graph
       - dsep
       - recoverability
-  - title: "2. Test: was silence informative?"
+  - title: "Step 2. Test: was silence informative?"
     contents:
       - silence_test
       - sensor_gap_test
       - fatigue_check
-  - title: "3. Estimate the two-level VAR(1)"
+  - title: "Step 3. Estimate the two-level VAR(1)"
     contents:
       - make_pairs
       - fit_pairs
@@ -73,19 +73,19 @@ reference:
       - fit_ipw
       - fit_fiml
       - loglik_fiml
-  - title: "4. Sensitivity analysis for self-censoring"
+  - title: "Step 4. Sensitivity analysis for self-censoring"
     contents:
       - fit_tilt
       - tilt_profile
       - plot.tilt_profile
       - break_even
       - bounds_support
-  - title: "5. Calibrate the sensitivity value"
+  - title: "Step 5. Calibrate the sensitivity parameter"
     contents:
       - calibrate_delta
       - plot.delta_calibration
       - simulate_from_fit
-  - title: "6. Report"
+  - title: "Step 6. Report"
     contents:
       - missingness_declaration
   - title: Simulation and population parameters

@@ -26,9 +26,26 @@ display issue.
 * Subsetting a `recoverability`, `silence_test` or `sensor_gap_test` object
   with `[` now returns a plain data frame; previously the class was kept and
   the print method showed an incomplete report. No estimate is affected.
-* `fit_fiml()` stops with a message when persons have fewer than two prompts;
+* Input validation with clear messages: a response-indicator column must be
+  0/1 without `NA`; state columns must be complete at answered prompts
+  (item-level missingness is reported instead of producing `NA` results); a
+  response column named other than the default `"R"` must exist; the prompt
+  index must be an integer index without `NA`, also in `fatigue_check()`; the
+  "too few pairs/triples" messages report the counts and hint at the prompt
+  index. `bounds_support()` checks its columns and returns the whole scale for
+  a person without any answered prompt (previously `NaN`).
+* `fit_pairs()` (and the tilted fits) warn when no person reaches `min_pairs`
+  complete pairs, instead of silently returning `NaN` between-person
+  summaries; `fit_fiml()` starts from a diagonal between-person covariance
+  when fewer than three persons have enough pairs (previously it failed for
+  one to three persons), stops when the prompt index spans a single prompt,
+  and warns when prompt indices are missing for some persons;
   `fatigue_check()` no longer fails when the prompt index has fewer than four
   distinct values.
+* `tilt_profile(which = )` accepts a variable name; `plot.tilt_profile()`
+  reports unknown coefficient names; `plot.dm_graph()` honors a user `main`;
+  `print.delta_calibration()` reports failed bootstrap resamples; the EM loop
+  of `fit_fiml()` checks for user interrupts.
 
 # silentema 0.2.1
 

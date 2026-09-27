@@ -23,8 +23,9 @@ fit_fiml(
 
 \item{id, time}{Names of the person and prompt-index columns.}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{start}{Optional list with \code{Phi}, \code{Psi}, \code{mu},
 \code{Sigma_mu}; by default the answered-pairs estimates are used.}
@@ -57,7 +58,7 @@ The prompts of a person are treated as one equally spaced series
   specification of dynamic structural equation models with equally spaced
   occasions); there is no \code{day} argument. Standard errors are not
   computed (the estimator serves as the MAR benchmark in the simulation
-  studies). \code{loglik} holds the log-likelihood evaluated at the
+  studies of Yu, 2026). \code{loglik} holds the log-likelihood evaluated at the
   parameters entering each EM iteration, so its last element belongs to the
   penultimate iterate; \code{\link{loglik_fiml}} evaluates the returned
   estimates.

@@ -16,13 +16,15 @@ value per variable).}
 
 \item{id}{Name of the person column.}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 }
 \value{
 A data frame with one row per person and variable and the columns
-  \code{id}, \code{variable}, \code{response_rate}, \code{mean_observed},
-  \code{lower} and \code{upper}.
+  \code{id}, \code{variable}, \code{response_rate}, \code{mean_observed}
+  (\code{NA} for a person without any answered prompt, whose bounds are then
+  the whole scale), \code{lower} and \code{upper}.
 }
 \description{
 Worst-case bounds in the spirit of Manski (2003): every skipped prompt

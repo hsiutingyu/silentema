@@ -16,8 +16,9 @@ make_pairs(data, vars, id = "id", time = "time", day = NULL, R = "R")
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 }
 \value{
 A list with \code{y} (matrix of states at \eqn{t}), \code{x}
@@ -31,7 +32,13 @@ A list with \code{y} (matrix of states at \eqn{t}), \code{x}
   \code{Rv} (the response indicator in the row order of \code{data}).
 }
 \description{
-Build adjacent prompt pairs from long experience-sampling data
+A complete pair is two adjacent scheduled prompts of one person (within a
+day, when a day column is given) that were both answered. Complete pairs are
+the building block of every estimator in the package: \code{\link{fit_pairs}},
+\code{\link{fit_tilt}} and \code{\link{fit_ipw}} regress the states at the
+second prompt on the states at the first. This function forms the pairs once
+and also collects the prompts whose predecessor was answered, which the
+response models of the weighted estimators use.
 }
 \details{
 The \code{time} column must be an integer prompt index that

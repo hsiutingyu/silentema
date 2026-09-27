@@ -31,6 +31,7 @@ supplied, and marks a calibrated value when supplied.
 \examples{
 sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
 prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
+# 'calibrated' marks a value such as the one returned by calibrate_delta()
 plot(prof, plausible = c(-1, 0), calibrated = -0.6)
 # cross-lagged effects on stress instead of the row of the self-censoring variable
 plot(prof, coefs = c("Stress<-NegA", "Stress<-Fatigue"), main = "Effects on Stress")

@@ -20,17 +20,15 @@ This is a new package. It implements the methods of a manuscript under review (Y
 
 * `checking compilation flags used ... NOTE: Compilation used the following non-portable flag(s): '-mno-omit-leaf-frame-pointer'`. The flag comes from the local R installation's site `Makeconf`, not from the package: `src/Makevars` sets only `PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)`.
 
-* `checking HTML version of manual ... NOTE: Skipping checking HTML validation: no command 'tidy' found` (local machine only).
-
 Should a platform report `checking installed package size ... NOTE` (the compiled Armadillo code is about 3.6 MB in `libs`), this is the usual size of a small RcppArmadillo package.
 
 ## Comments on the package
 
 * The package contains C++ code (an EM algorithm for a state-space model) through Rcpp and RcppArmadillo; no C++ standard is specified in `Makevars` (the default of the R version is used), and the code compiles without warnings under gcc 13 and clang with `-Wall -Wextra -pedantic`.
-* Every exported function has a documented `\value` section and runnable examples; there is no `\dontrun{}` or `\donttest{}`. Examples run in about 7 seconds in total (none above 1.2 s), the tests in about 20 seconds and the five vignettes in about 60 seconds on the local machine.
+* Every exported function has a documented `\value` section and runnable examples; there is no `\dontrun{}` or `\donttest{}`. Examples run in about 7 seconds in total (none above 1.2 s), the tests in about 25 seconds and the five vignettes in about 60 seconds on the local machine.
 * Functions that simulate or bootstrap accept an optional `seed` argument. When it is supplied, the caller's random-number state (`.Random.seed`) is saved and restored on exit, so the functions never change the user's random-number stream; when it is not supplied (the default), the current stream is used and advanced as usual. The package never sets a seed on its own.
 * Nothing is written to the user's file system except by `missingness_declaration(file = )` when the user gives a path; the examples and tests write only to `tempfile()`.
-* Spelling: `inst/WORDLIST` lists the domain terms (EMA, nonresponse, recoverability, estimand, motif codes M0-M6, author names) and the DOI fragments of the Description.
+* Spelling: the words that the DESCRIPTION spell check flags (Dhaene, Jochmans, Manski, Mohan, Shumway, Stoffer, EMA, estimands, nonresponse) are author names of the cited references and standard terms of the missing-data and experience-sampling literatures; `inst/WORDLIST` lists them.
 
 ## Downstream dependencies
 

@@ -7,7 +7,8 @@
 simulate_from_fit(fit, N, T, days = NULL, kappa_R = 0, seed = NULL)
 }
 \arguments{
-\item{fit}{A \code{tilt_fit} (or \code{pairs_fit} with \code{delta = 0}).}
+\item{fit}{A \code{tilt_fit} (or a plain \code{pairs_fit}, which is treated
+as a fit at \code{delta = 0}).}
 
 \item{N, T}{Persons and prompts.}
 

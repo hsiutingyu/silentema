@@ -77,8 +77,7 @@
         </dt>
         <dd>silentema: dynamic missingness graphs and sensitivity analysis for EMA data</dd>
       </dl></div><div class="section level2">
-      <h2 id="-declare-and-check-dynamic-missingness-graphs"></h2><li>Declare and check: dynamic missingness graphs</li>
-
+      <h2 id="step-declare-and-check-dynamic-missingness-graphs">Step 1. Declare and check: dynamic missingness graphs<a class="anchor" aria-label="anchor" href="#step-declare-and-check-dynamic-missingness-graphs"></a></h2>
       
       <p class="section-desc"></p><p>Build a dm-graph from the motif taxonomy, query it, and read the recoverability report.</p>
 
@@ -109,8 +108,7 @@
         </dt>
         <dd>Recoverability report for a dm-graph</dd>
       </dl></div><div class="section level2">
-      <h2 id="-test-was-silence-informative-"></h2><li>Test: was silence informative?</li>
-
+      <h2 id="step-test-was-silence-informative-">Step 2. Test: was silence informative?<a class="anchor" aria-label="anchor" href="#step-test-was-silence-informative-"></a></h2>
       
       
 
@@ -136,8 +134,7 @@
         </dt>
         <dd>Descriptive check for burden or fatigue in the response sequence</dd>
       </dl></div><div class="section level2">
-      <h2 id="-estimate-the-two-level-var-"></h2><li>Estimate the two-level VAR(1)</li>
-
+      <h2 id="step-estimate-the-two-level-var-">Step 3. Estimate the two-level VAR(1)<a class="anchor" aria-label="anchor" href="#step-estimate-the-two-level-var-"></a></h2>
       
       
 
@@ -156,7 +153,7 @@
           
           <code><a href="fit_pairs.html">fit_pairs()</a></code> 
         </dt>
-        <dd>Within-person VAR(1) estimated from complete adjacent prompts</dd>
+        <dd>Within-person VAR(1) estimated from complete adjacent pairs</dd>
       </dl><dl><dt>
           
           <code><a href="summary.pairs_fit.html">summary(<i>&lt;pairs_fit&gt;</i>)</a></code> <code><a href="summary.pairs_fit.html">coef(<i>&lt;pairs_fit&gt;</i>)</a></code> <code><a href="summary.pairs_fit.html">vcov(<i>&lt;pairs_fit&gt;</i>)</a></code> <code><a href="summary.pairs_fit.html">confint(<i>&lt;pairs_fit&gt;</i>)</a></code> <code><a href="summary.pairs_fit.html">nobs(<i>&lt;pairs_fit&gt;</i>)</a></code> 
@@ -178,8 +175,7 @@
         </dt>
         <dd>Log-likelihood of the two-level VAR(1) at given parameters (MAR)</dd>
       </dl></div><div class="section level2">
-      <h2 id="-sensitivity-analysis-for-self-censoring"></h2><li>Sensitivity analysis for self-censoring</li>
-
+      <h2 id="step-sensitivity-analysis-for-self-censoring">Step 4. Sensitivity analysis for self-censoring<a class="anchor" aria-label="anchor" href="#step-sensitivity-analysis-for-self-censoring"></a></h2>
       
       
 
@@ -193,7 +189,7 @@
           
           <code><a href="fit_tilt.html">fit_tilt()</a></code> 
         </dt>
-        <dd>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value</dd>
+        <dd>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter</dd>
       </dl><dl><dt>
           
           <code><a href="tilt_profile.html">tilt_profile()</a></code> 
@@ -215,8 +211,7 @@
         </dt>
         <dd>Worst-case (support) bounds for person means under arbitrary nonresponse</dd>
       </dl></div><div class="section level2">
-      <h2 id="-calibrate-the-sensitivity-value"></h2><li>Calibrate the sensitivity value</li>
-
+      <h2 id="step-calibrate-the-sensitivity-parameter">Step 5. Calibrate the sensitivity parameter<a class="anchor" aria-label="anchor" href="#step-calibrate-the-sensitivity-parameter"></a></h2>
       
       
 
@@ -230,7 +225,7 @@
           
           <code><a href="calibrate_delta.html">calibrate_delta()</a></code> 
         </dt>
-        <dd>Calibrate the self-censoring sensitivity value from a design feature</dd>
+        <dd>Calibrate the self-censoring sensitivity parameter from a design feature</dd>
       </dl><dl><dt>
           
           <code><a href="plot.delta_calibration.html">plot(<i>&lt;delta_calibration&gt;</i>)</a></code> 
@@ -242,8 +237,7 @@
         </dt>
         <dd>Simulate data from a fitted tilt model</dd>
       </dl></div><div class="section level2">
-      <h2 id="-report"></h2><li>Report</li>
-
+      <h2 id="step-report">Step 6. Report<a class="anchor" aria-label="anchor" href="#step-report"></a></h2>
       
       
 

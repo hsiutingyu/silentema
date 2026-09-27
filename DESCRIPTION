@@ -4,8 +4,8 @@ Title: Dynamic Missingness Graphs and Sensitivity Analysis for EMA Data
 Version: 1.0.0
 Authors@R: person(given = "Hsiu-Ting", family = "Yu", email = "hsiutingyu@gmail.com",
                   role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0002-3668-8033"))
-Description: Tools for informative nonresponse in ecological momentary assessment
-    (EMA) and other experience-sampling designs. Declares the assumed nonresponse
+Description: Tools for diagnosing and correcting informative nonresponse in
+    ecological momentary assessment (EMA) and other experience-sampling designs. Declares the assumed nonresponse
     mechanism as a dynamic missingness graph built from a taxonomy of seven
     motifs, following the graphical missing-data framework of Mohan and Pearl
     (2021) <doi:10.1080/01621459.2021.1874961>; checks by d-separation which

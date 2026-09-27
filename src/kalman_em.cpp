@@ -29,6 +29,7 @@ List kalman_em_cpp(const arma::cube& Y, const arma::imat& R, arma::mat Phi, arma
   int iter = 0;
   double ll_old = -datum::inf;
   for (iter = 1; iter <= max_iter; ++iter) {
+    Rcpp::checkUserInterrupt();
     mat F = join_cols(join_rows(Phi, I_p - Phi), join_rows(zeros(p, p), I_p));
     mat Q = zeros(q, q); Q.submat(0, 0, p - 1, p - 1) = Psi;
     vec m1 = join_cols(mu, mu);

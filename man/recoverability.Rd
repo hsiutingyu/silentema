@@ -9,7 +9,9 @@ recoverability(g, t = 3L)
 \arguments{
 \item{g}{A \code{dm_graph}.}
 
-\item{t}{Index of the focal prompt inside the window (default: the third).}
+\item{t}{Index of the focal prompt inside the window (default: the third;
+it must satisfy \code{3 <= t <= window - 1}, so that the prompts
+\eqn{t-2} to \eqn{t+1} exist).}
 }
 \value{
 A data frame of class \code{"recoverability"} with one row per

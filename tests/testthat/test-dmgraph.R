@@ -51,7 +51,7 @@ test_that("d-separation gives textbook answers on small graphs", {
 test_that("d-separation agrees with linear-Gaussian partial correlations on dm-graphs", {
   set.seed(1)
   for (ms in list("M0", "M1", "M2", "M3", "M4", "M5", "M6", c("M1", "M3"), c("M1", "M4"), c("M2", "M4"))) {
-    g <- dm_graph(ms, sensor = TRUE)
+    g <- suppressMessages(dm_graph(ms, sensor = TRUE))
     nodes <- g$nodes; k <- length(nodes)
     B <- matrix(0, k, k, dimnames = list(nodes, nodes))
     for (i in seq_len(nrow(g$edges))) B[g$edges[i, "to"], g$edges[i, "from"]] <- runif(1, 0.3, 0.9) * sample(c(-1, 1), 1)
@@ -77,7 +77,7 @@ test_that("recoverability verdicts match the hand-derived table (Study 4)", {
   silence_expected <- c(M0 = TRUE, M1 = TRUE, M2 = FALSE, M3 = TRUE, M4 = TRUE, M5 = FALSE, M6 = FALSE,
                         "M1+M3" = FALSE, "M1+M4" = TRUE, "M3+M4" = TRUE, "M2+M4" = FALSE, "M1+M3+M4" = FALSE)
   for (nm in names(expected)) {
-    r <- recoverability(dm_graph(strsplit(nm, "\\+")[[1]]))
+    r <- recoverability(suppressMessages(dm_graph(strsplit(nm, "\\+")[[1]])))
     expect_equal(r$recoverable[1:5], expected[[nm]], info = nm)
     expect_equal(attr(r, "silence_null"), unname(silence_expected[nm]), info = nm)
   }
@@ -99,4 +99,15 @@ test_that("missingness declaration writes a template", {
   txt <- readLines(tf)
   expect_true(any(grepl("Motifs: M2 \\+ M4", txt)))
   expect_true(any(grepl("NOT recoverable", txt)))
+})
+
+test_that("subsetting a report returns a plain data frame and plot honors a user title", {
+  r <- recoverability(dm_graph("M2", sensor = TRUE))
+  sub <- r[, c("estimand", "recoverable")]
+  expect_identical(class(sub), "data.frame")
+  expect_equal(nrow(sub), nrow(r))
+  expect_output(print(r[1:2, ]), "estimand")
+  pdf(NULL); on.exit(dev.off())
+  expect_silent(plot(dm_graph("M1"), main = "custom title"))
+  expect_error(recoverability(dm_graph("M1"), t = 2), "t must satisfy")
 })

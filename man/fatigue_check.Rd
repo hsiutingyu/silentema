@@ -14,8 +14,8 @@ fatigue_check(data, id = "id", time = "time", day = NULL, R = "R")
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA});
+required, because the check has no state columns from which to infer it.}
 }
 \value{
 An object of class \code{"fatigue_check"}: a list with

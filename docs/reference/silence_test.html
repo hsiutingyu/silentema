@@ -168,16 +168,17 @@ day (the overnight gap is not a lag-1 transition).</p></dd>
 
 
 <dt>R</dt>
-<dd><p>Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
+<dd><p>Name of the response-indicator column (0/1, no <code>NA</code>). If the
+default name is not among the columns of <code>data</code>, a prompt counts as
+answered when all <code>vars</code> are non-missing; any other name must exist.</p></dd>
 
 
 <dt>se</dt>
 <dd><p><code>"cluster"</code> (cluster-robust by person with \(t(G-1)\) and
-\(F(q, G-1)\) reference distributions; default when there are at least
-10 persons) or <code>"dayblock"</code> (block bootstrap that resamples
-person-day blocks with replacement, for single-person data; requires
-<code>day</code>).</p></dd>
+\(F(q, G-1)\) reference distributions; the default when there are at
+least 10 persons) or <code>"dayblock"</code> (block bootstrap that resamples
+person-day blocks with replacement; the default with fewer than 10
+persons; requires <code>day</code>).</p></dd>
 
 
 <dt>B</dt>
@@ -200,9 +201,10 @@ state is restored).</p></dd>
 <p>An object of class <code>c("silence_test", "data.frame")</code>: a data
   frame with one row per state variable and the columns <code>variable</code>,</p>
 <p></p>
-<p><code>coef_R</code> (coefficient of \(R_t\)), <code>se</code>, <code>z</code> and</p>
+<p><code>coef_R</code> (coefficient of \(R_t\)), <code>se</code>, <code>z</code> (the ratio
+  of the coefficient to its standard error, referred to \(t(G - 1)\) under</p>
 <p></p>
-<p><code>p</code>, and the attributes <code>joint</code> (a named vector with the Wald
+<p><code>se = "cluster"</code>) and <code>p</code>, and the attributes <code>joint</code> (a named vector with the Wald
   statistic over all variables, its degrees of freedom and its p value),</p>
 <p></p>
 <p><code>n_triples</code>, <code>n_skipped</code> (triples with a skipped middle

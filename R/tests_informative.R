@@ -72,18 +72,19 @@ block_boot_coef <- function(Y, X, g, block, B = 500, seed = NULL) {
 #'
 #' @inheritParams make_pairs
 #' @param se \code{"cluster"} (cluster-robust by person with \eqn{t(G-1)} and
-#'   \eqn{F(q, G-1)} reference distributions; default when there are at least
-#'   10 persons) or \code{"dayblock"} (block bootstrap that resamples
-#'   person-day blocks with replacement, for single-person data; requires
-#'   \code{day}).
+#'   \eqn{F(q, G-1)} reference distributions; the default when there are at
+#'   least 10 persons) or \code{"dayblock"} (block bootstrap that resamples
+#'   person-day blocks with replacement; the default with fewer than 10
+#'   persons; requires \code{day}).
 #' @param B Number of bootstrap resamples for \code{se = "dayblock"}.
 #' @param poly Degree of the polynomial in the lagged states (1 = linear).
 #' @param seed Optional seed for the bootstrap (the caller's random-number
 #'   state is restored).
 #' @return An object of class \code{c("silence_test", "data.frame")}: a data
 #'   frame with one row per state variable and the columns \code{variable},
-#'   \code{coef_R} (coefficient of \eqn{R_t}), \code{se}, \code{z} and
-#'   \code{p}, and the attributes \code{joint} (a named vector with the Wald
+#'   \code{coef_R} (coefficient of \eqn{R_t}), \code{se}, \code{z} (the ratio
+#'   of the coefficient to its standard error, referred to \eqn{t(G - 1)} under
+#'   \code{se = "cluster"}) and \code{p}, and the attributes \code{joint} (a named vector with the Wald
 #'   statistic over all variables, its degrees of freedom and its p value),
 #'   \code{n_triples}, \code{n_skipped} (triples with a skipped middle
 #'   prompt) and \code{se} (the method used). It has a \code{print} method.
@@ -110,19 +111,20 @@ block_boot_coef <- function(Y, X, g, block, B = 500, seed = NULL) {
 #' @export
 silence_test <- function(data, vars, id = "id", time = "time", day = NULL, R = "R",
                          se = NULL, B = 500, poly = 1L, seed = NULL) {
-  check_columns(data, c(vars, id, time, day, if (!is.null(R) && R %in% names(data)) R))
-  if (!is.numeric(data[[time]]) || any(abs(data[[time]] - round(data[[time]])) > 1e-8, na.rm = TRUE))
-    stop("'", time, "' must be an integer prompt index (1, 2, 3, ... within person); see ?make_pairs")
+  check_columns(data, c(vars, id, time, day))
+  check_time(data, time)
+  Rv <- response_indicator(data, vars, R)
   if (!is.null(se)) se <- match.arg(se, c("cluster", "dayblock"))
-  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]
+  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]; Rv <- Rv[ord]
   rid <- data[[id]]; rt <- data[[time]]
-  Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
   n <- nrow(data)
   i <- seq_len(n - 2L)
   ok <- rid[i] == rid[i + 2L] & rt[i + 2L] == rt[i] + 2L & Rv[i] == 1L & Rv[i + 2L] == 1L
   if (!is.null(day)) ok <- ok & data[[day]][i] == data[[day]][i + 2L]
   i <- i[ok]
-  if (length(i) < 10) stop("Too few triples for the silence test")
+  if (length(i) < 10)
+    stop(sprintf("Too few triples for the silence test: %d of %d prompts start a triple with both outer prompts answered (at least 10 are needed); check that '%s' is a consecutive integer prompt index within person%s",
+                 length(i), n, time, if (!is.null(day)) " and day" else ""))
   Xm <- as.matrix(data[, vars, drop = FALSE])
   Y <- Xm[i + 2L, , drop = FALSE]; Xlag <- Xm[i, , drop = FALSE]; Rt <- Rv[i + 1L]
   if (poly >= 2) for (dg in 2:poly) Xlag <- cbind(Xlag, Xlag[, seq_along(vars), drop = FALSE]^dg)
@@ -137,7 +139,7 @@ silence_test <- function(data, vars, id = "id", time = "time", day = NULL, R = "
   if (se == "cluster") {
     V <- fr$vcov[pos, pos, drop = FALSE]
   } else {
-    if (is.null(day)) stop("day-block bootstrap needs a day column")
+    if (is.null(day)) stop("the day-block bootstrap (the default with fewer than 10 persons) needs a 'day' column; give 'day', or set se = \"cluster\"")
     Vall <- block_boot_coef(Y, X, g, block = paste(g, data[[day]][i + 2L]), B = B, seed = seed)
     V <- Vall[pos, pos, drop = FALSE]
   }
@@ -227,7 +229,7 @@ sensor_gap_test <- function(data, vars, sensor = "S", id = "id", time = "time", 
   k <- ncol(X)
   est <- fr$coef[k, 1]
   V <- if (se == "cluster") fr$vcov[k, k] else {
-    if (is.null(day)) stop("day-block bootstrap needs a day column")
+    if (is.null(day)) stop("the day-block bootstrap (the default with fewer than 10 persons) needs a 'day' column; give 'day', or set se = \"cluster\"")
     block_boot_coef(matrix(S, ncol = 1), X, g, block = paste(g, data[[day]][lo$row_t]), B = B, seed = seed)[k, k]
   }
   s <- sqrt(V); z <- est / s
@@ -260,6 +262,8 @@ print.sensor_gap_test <- function(x, digits = 3, ...) {
 #' autocorrelated states and the person propensities, so this is a
 #' descriptive check, not a test of M3 against the other motifs.
 #' @inheritParams make_pairs
+#' @param R Name of the response-indicator column (0/1, no \code{NA});
+#'   required, because the check has no state columns from which to infer it.
 #' @return An object of class \code{"fatigue_check"}: a list with
 #'   \code{after_answered} and \code{after_skipped} (pooled response rates
 #'   after an answered and after a skipped prompt), \code{difference}
@@ -274,8 +278,10 @@ print.sensor_gap_test <- function(x, digits = 3, ...) {
 #' @export
 fatigue_check <- function(data, id = "id", time = "time", day = NULL, R = "R") {
   check_columns(data, c(id, time, day, R))
-  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]
-  rid <- data[[id]]; rt <- data[[time]]; Rv <- data[[R]]
+  check_time(data, time)
+  Rv <- response_indicator(data, character(0), R)
+  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]; Rv <- Rv[ord]
+  rid <- data[[id]]; rt <- data[[time]]
   n <- nrow(data); i <- seq_len(n - 1L)
   ok <- rid[i] == rid[i + 1L] & rt[i + 1L] == rt[i] + 1L
   if (!is.null(day)) ok <- ok & data[[day]][i] == data[[day]][i + 1L]

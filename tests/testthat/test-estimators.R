@@ -177,3 +177,60 @@ test_that("FIML log-likelihood matches the brute-force Gaussian likelihood and E
   expect_true(all(diff(ff$loglik) > -1e-6))
   expect_output(print(ff), "FIML")
 })
+
+test_that("fit_ipw runs, returns the documented elements, and reduces to fit_pairs with constant weights", {
+  sim <- simulate_ema(N = 40, T = 30, motifs = "M5", compliance = 0.75, seed = 31)
+  fi <- fit_ipw(sim$data, sim$vars, context = "C")
+  expect_s3_class(fi, c("ipw_fit", "pairs_fit"))
+  expect_true(inherits(fi$response_model, "glm"))
+  expect_true(is.finite(fi$ess) && fi$ess <= fi$n_pairs)
+  expect_equal(length(fi$weights), fi$n_pairs)
+  expect_true(all(fi$weights > 0))
+  fp <- fit_ipw(sim$data, sim$vars, context = "C", propensity = "person")
+  expect_equal(dim(fp$Phi), c(4, 4))
+  expect_error(fit_ipw(sim$data, sim$vars, context = "nope"), "not found")
+  # covariate adjustment and the probe-free tilt at delta = 0 share the pairs
+  fa <- fit_pairs(sim$data, sim$vars, covariates = "C")
+  expect_equal(dim(fa$B_cov), c(4, 1))
+  expect_equal(nobs(fa), nobs(fi))
+})
+
+test_that("invalid response indicators and item-level missingness are rejected with clear messages", {
+  sim <- simulate_ema(N = 20, T = 15, motifs = "M1", seed = 5)
+  d <- sim$data
+  d_na <- d; d_na$R[3] <- NA
+  expect_error(make_pairs(d_na, sim$vars), "without NA")
+  expect_error(fit_fiml(d_na, sim$vars), "without NA")
+  expect_error(silence_test(d_na, sim$vars), "without NA")
+  d_item <- d; d_item$NegA[which(d_item$R == 1)[1]] <- NA
+  expect_error(fit_pairs(d_item, sim$vars), "item-level missingness")
+  expect_error(silence_test(d_item, sim$vars), "item-level missingness")
+  expect_error(make_pairs(d, sim$vars, R = "resp"), "not found")
+  d_noR <- d; d_noR$R <- NULL
+  expect_equal(fit_pairs(d_noR, sim$vars)$Phi, fit_pairs(d, sim$vars)$Phi)
+  expect_error(fatigue_check(d_noR), "not found")
+  d_time <- d; d_time$time <- as.character(d_time$time)
+  expect_error(fatigue_check(d_time), "integer prompt index")
+  expect_error(fit_pairs(d[d$time %% 2 == 1, ], sim$vars), "consecutive integer prompt index")
+})
+
+test_that("small designs degrade gracefully", {
+  short <- simulate_ema(N = 40, T = 5, motifs = "M0", compliance = 0.9, seed = 6)
+  expect_warning(f <- fit_pairs(short$data, short$vars), "min_pairs")
+  expect_true(all(is.na(f$mu)))
+  f2 <- fit_pairs(short$data, short$vars, min_pairs = 2)
+  expect_true(all(is.finite(f2$mu)))
+  expect_s3_class(fit_fiml(short$data, short$vars), "fiml_fit")
+  two <- simulate_ema(N = 2, T = 30, motifs = "M0", compliance = 0.8, seed = 7)
+  expect_s3_class(fit_fiml(two$data, two$vars), "fiml_fit")
+  b <- bounds_support(short$data, short$vars, L = 1, U = 7)
+  expect_equal(nrow(b), 40 * 4)
+  d0 <- short$data; d0$R[d0$id == 1] <- 0L; d0[d0$id == 1, short$vars] <- NA
+  b0 <- bounds_support(d0, short$vars, L = 1, U = 7)
+  expect_equal(unname(unlist(b0[b0$id == 1 & b0$variable == "NegA", c("lower", "upper")])), c(1, 7))
+  expect_true(is.na(b0$mean_observed[b0$id == 1][1]))
+  expect_error(bounds_support(short$data, short$vars, L = 1, U = 7, id = "person"), "not found")
+  prof <- tilt_profile(simulate_ema(N = 30, T = 20, motifs = "M2", seed = 8)$data, short$vars, delta_grid = c(-0.5, 0), which = "PosA")
+  expect_equal(prof$which, 2)
+  expect_error(plot(prof, coefs = "Foo<-Bar"), "unknown coefficient")
+})

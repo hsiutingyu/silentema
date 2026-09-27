@@ -117,8 +117,9 @@ measures the damage of state-dependent nonresponse.</p>
 
 
 <dt>R</dt>
-<dd><p>Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
+<dd><p>Name of the response-indicator column (0/1, no <code>NA</code>). If the
+default name is not among the columns of <code>data</code>, a prompt counts as
+answered when all <code>vars</code> are non-missing; any other name must exist.</p></dd>
 
 
 <dt>start</dt>
@@ -159,7 +160,7 @@ prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
   specification of dynamic structural equation models with equally spaced
   occasions); there is no <code>day</code> argument. Standard errors are not
   computed (the estimator serves as the MAR benchmark in the simulation
-  studies). <code>loglik</code> holds the log-likelihood evaluated at the
+  studies of Yu, 2026). <code>loglik</code> holds the log-likelihood evaluated at the
   parameters entering each EM iteration, so its last element belongs to the
   penultimate iterate; <code><a href="loglik_fiml.html">loglik_fiml</a></code> evaluates the returned
   estimates.</p>

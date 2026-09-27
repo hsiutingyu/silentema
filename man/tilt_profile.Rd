@@ -25,11 +25,11 @@ tilt_profile(
 
 \item{vars}{Names of the state columns.}
 
-\item{delta_grid}{Numeric vector of sensitivity values for the
-self-censoring variable (the first of \code{vars} unless \code{which}
-says otherwise).}
+\item{delta_grid}{Numeric vector of values of the sensitivity parameter
+for the self-censoring variable (the first of \code{vars} unless
+\code{which} says otherwise).}
 
-\item{which}{Index (in \code{vars}) of the variable that drives
+\item{which}{Index (in \code{vars}), or name, of the variable that drives
 self-censoring.}
 
 \item{id, time}{Names of the person and prompt-index columns.}
@@ -37,8 +37,9 @@ self-censoring.}
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{propensity}{\code{"common"} (one intercept) or \code{"person"}
 (one intercept per person; use when a person-propensity motif M4 is
@@ -67,8 +68,8 @@ An object of class \code{"tilt_profile"}: a list with
 }
 \description{
 Fits \code{\link{fit_tilt}} over a grid of sensitivity values and collects
-the lagged coefficients, the contemporaneous partial correlations, the
-between-person means and (optionally) cluster-robust confidence limits.
+the lagged coefficients with cluster-robust confidence limits, the
+contemporaneous partial correlations and the between-person means.
 }
 \examples{
 sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)

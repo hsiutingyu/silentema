@@ -124,16 +124,17 @@ day (the overnight gap is not a lag-1 transition).</p></dd>
 
 
 <dt>R</dt>
-<dd><p>Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
+<dd><p>Name of the response-indicator column (0/1, no <code>NA</code>). If the
+default name is not among the columns of <code>data</code>, a prompt counts as
+answered when all <code>vars</code> are non-missing; any other name must exist.</p></dd>
 
 
 <dt>se</dt>
 <dd><p><code>"cluster"</code> (cluster-robust by person with \(t(G-1)\) and
-\(F(q, G-1)\) reference distributions; default when there are at least
-10 persons) or <code>"dayblock"</code> (block bootstrap that resamples
-person-day blocks with replacement, for single-person data; requires
-<code>day</code>).</p></dd>
+\(F(q, G-1)\) reference distributions; the default when there are at
+least 10 persons) or <code>"dayblock"</code> (block bootstrap that resamples
+person-day blocks with replacement; the default with fewer than 10
+persons; requires <code>day</code>).</p></dd>
 
 
 <dt>B</dt>

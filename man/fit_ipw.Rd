@@ -28,8 +28,9 @@ fit_ipw(
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{propensity}{\code{"common"} or \code{"person"} (adds the person's
 response rate on other prompts as a covariate of the response model).}
@@ -49,9 +50,9 @@ An object of class \code{c("ipw_fit", "pairs_fit")}: a
 \description{
 For motif M5 with an observed context variable (\code{C_t -> X_t} and
 \code{C_t -> R_t}), complete adjacent pairs are reweighted by the
-stabilized weight \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid c_t, x_{t-1})}
-so that the context-marginal transition kernel is recovered (the observed-
-context case of the recoverability results in Yu, 2026). Both response models are probit regressions fitted on all
+stabilized weight \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid c_t, x_{t-1})}{w_t = P(R_t = 1 | x_{t-1}) / P(R_t = 1 | c_t, x_{t-1})}
+so that the context-marginal transition kernel is recovered (the
+observed-context case of the recoverability results in Yu, 2026). Both response models are probit regressions fitted on all
 prompts whose predecessor was answered (the response indicator is always
 observed), with person-specific intercepts absorbed by including the
 person's observed response rate as an offset-like covariate when

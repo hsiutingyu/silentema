@@ -8,7 +8,7 @@ are reweighted by \(w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid x_t)\)
 (inverse-probability weighting with a stabilized numerator). Weighted
 within-person regression and intercept calibration are iterated to a
 fixed point; the population parameters are a fixed point when
-\(\delta\) is the true selection vector."><title>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value — fit_tilt • silentema</title><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Code_Pro-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Serif_4-0.4.8/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value — fit_tilt"><meta property="og:description" content="Sensitivity analysis for motif M2 (self-censoring). The selection model
+\(\delta\) is the true selection vector."><title>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter — fit_tilt • silentema</title><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Code_Pro-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Serif_4-0.4.8/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter — fit_tilt"><meta property="og:description" content="Sensitivity analysis for motif M2 (self-censoring). The selection model
 \(P(R_t = 1 \mid X_t = x) = \Phi_N(\alpha + \delta' x)\) is held at a fixed
 sensitivity vector \(\delta\) that is never estimated from the fit. The
 response intercept is calibrated so that the model-implied response rate
@@ -75,7 +75,7 @@ fixed point; the population parameters are a fixed point when
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value</h1>
+      <img src="" class="logo" alt=""><h1>Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter</h1>
       <small class="dont-index">Source: <a href="https://github.com/hsiutingyu/silentema/blob/HEAD/R/fit_tilt.R" class="external-link"><code>R/fit_tilt.R</code></a></small>
       <div class="d-none name"><code>fit_tilt.Rd</code></div>
     </div>
@@ -125,10 +125,10 @@ fixed point; the population parameters are a fixed point when
 
 
 <dt>delta</dt>
-<dd><p>Numeric vector (length = number of variables) of
-sensitivity coefficients in probit units per unit of the state; a scalar
-is applied to the first variable. Negative values encode "high states
-are skipped".</p></dd>
+<dd><p>The sensitivity parameter: a numeric vector (length = number
+of variables) of selection coefficients in probit units per unit of the
+state; a scalar is applied to the first variable. Negative values encode
+"high states are skipped".</p></dd>
 
 
 <dt>id, time</dt>
@@ -141,8 +141,9 @@ day (the overnight gap is not a lag-1 transition).</p></dd>
 
 
 <dt>R</dt>
-<dd><p>Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
+<dd><p>Name of the response-indicator column (0/1, no <code>NA</code>). If the
+default name is not among the columns of <code>data</code>, a prompt counts as
+answered when all <code>vars</code> are non-missing; any other name must exist.</p></dd>
 
 
 <dt>propensity</dt>

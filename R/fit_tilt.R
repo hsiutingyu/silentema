@@ -1,21 +1,21 @@
-#' Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value
+#' Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter
 #'
 #' Sensitivity analysis for motif M2 (self-censoring). The selection model
-#' \eqn{P(R_t = 1 \mid X_t = x) = \Phi_N(\alpha + \delta' x)} is held at a fixed
+#' \eqn{P(R_t = 1 \mid X_t = x) = \Phi_N(\alpha + \delta' x)}{P(R_t = 1 | X_t = x) = Phi_N(alpha + delta' x)} is held at a fixed
 #' sensitivity vector \eqn{\delta} that is never estimated from the fit. The
 #' response intercept is calibrated so that the model-implied response rate
 #' given the observed history matches the observed one, and complete pairs
-#' are reweighted by \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid x_t)}
+#' are reweighted by \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid x_t)}{w_t = P(R_t = 1 | x_{t-1}) / P(R_t = 1 | x_t)}
 #' (inverse-probability weighting with a stabilized numerator). Weighted
 #' within-person regression and intercept calibration are iterated to a
 #' fixed point; the population parameters are a fixed point when
 #' \eqn{\delta} is the true selection vector.
 #'
 #' @inheritParams fit_pairs
-#' @param delta Numeric vector (length = number of variables) of
-#'   sensitivity coefficients in probit units per unit of the state; a scalar
-#'   is applied to the first variable. Negative values encode "high states
-#'   are skipped".
+#' @param delta The sensitivity parameter: a numeric vector (length = number
+#'   of variables) of selection coefficients in probit units per unit of the
+#'   state; a scalar is applied to the first variable. Negative values encode
+#'   "high states are skipped".
 #' @param propensity \code{"common"} (one intercept) or \code{"person"}
 #'   (one intercept per person; use when a person-propensity motif M4 is
 #'   declared together with M2).
@@ -148,14 +148,14 @@ fit_tilt <- function(data, vars, delta, id = "id", time = "time", day = NULL, R 
 #' Sensitivity profile over a grid of self-censoring values
 #'
 #' Fits \code{\link{fit_tilt}} over a grid of sensitivity values and collects
-#' the lagged coefficients, the contemporaneous partial correlations, the
-#' between-person means and (optionally) cluster-robust confidence limits.
+#' the lagged coefficients with cluster-robust confidence limits, the
+#' contemporaneous partial correlations and the between-person means.
 #'
 #' @inheritParams fit_tilt
-#' @param delta_grid Numeric vector of sensitivity values for the
-#'   self-censoring variable (the first of \code{vars} unless \code{which}
-#'   says otherwise).
-#' @param which Index (in \code{vars}) of the variable that drives
+#' @param delta_grid Numeric vector of values of the sensitivity parameter
+#'   for the self-censoring variable (the first of \code{vars} unless
+#'   \code{which} says otherwise).
+#' @param which Index (in \code{vars}), or name, of the variable that drives
 #'   self-censoring.
 #' @param level Confidence level for the limits.
 #' @param probe Optional probe column name passed to \code{\link{fit_tilt}}.
@@ -186,7 +186,8 @@ tilt_profile <- function(data, vars, delta_grid = seq(-2, 2, by = 0.5), which = 
                          propensity = c("common", "person"), level = 0.95, pairs = NULL, probe = NULL, min_pairs = 5L) {
   propensity <- match.arg(propensity)
   p <- length(vars)
-  if (!is.numeric(which) || length(which) != 1L || which < 1 || which > p) stop("'which' must index one of 'vars'")
+  if (is.character(which)) which <- match(which, vars)
+  if (!is.numeric(which) || length(which) != 1L || is.na(which) || which < 1 || which > p) stop("'which' must index (or name) one of 'vars'")
   pr <- if (is.null(pairs)) make_pairs(data, vars, id, time, day, R) else pairs
   fits <- vector("list", length(delta_grid))
   rows <- list(); prow <- list(); mus <- matrix(NA_real_, length(delta_grid), p, dimnames = list(NULL, vars))
@@ -294,6 +295,7 @@ break_even <- function(profile, delta_max = max(abs(profile$delta_grid))) {
 #' @examples
 #' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
+#' # 'calibrated' marks a value such as the one returned by calibrate_delta()
 #' plot(prof, plausible = c(-1, 0), calibrated = -0.6)
 #' # cross-lagged effects on stress instead of the row of the self-censoring variable
 #' plot(prof, coefs = c("Stress<-NegA", "Stress<-Fatigue"), main = "Effects on Stress")
@@ -301,6 +303,8 @@ break_even <- function(profile, delta_max = max(abs(profile$delta_grid))) {
 plot.tilt_profile <- function(x, coefs = NULL, plausible = NULL, calibrated = NULL, ...) {
   d <- x$Phi
   if (is.null(coefs)) coefs <- paste0(x$vars, "<-", x$vars[x$which])
+  bad <- setdiff(coefs, unique(d$coef))
+  if (length(bad)) stop("unknown coefficient name(s): ", paste(bad, collapse = ", "), "; use the \"Y<-X\" form, e.g. ", d$coef[1])
   d <- d[d$coef %in% coefs, ]
   cols <- grDevices::hcl.colors(length(coefs), "Dark 3")
   graphics::plot(range(d$delta), range(c(d$lower, d$upper)), type = "n",

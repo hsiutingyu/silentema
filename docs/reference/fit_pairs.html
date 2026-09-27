@@ -6,16 +6,18 @@ estimator). This is the estimator that recovers the transition kernel under
 the recoverable motifs (M0, M1, M3, M4 and their combinations, and M5 with
 an observed context; see recoverability). Optional weights
 turn it into the inverse-probability-weighted or tilted estimator. By
-default the split-panel jackknife of Dhaene and Jochmans (2015) removes the
-finite-\(T\) (Nickell) bias of the within estimator of \(\Phi\)."><title>Within-person VAR(1) estimated from complete adjacent prompts — fit_pairs • silentema</title><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Code_Pro-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Serif_4-0.4.8/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Within-person VAR(1) estimated from complete adjacent prompts — fit_pairs"><meta property="og:description" content="Estimates the lagged-coefficient matrix \(\Phi\), the innovation
+default the half-panel (split-panel) jackknife of Dhaene and Jochmans (2015)
+removes the finite-\(T\) (Nickell) bias of the within estimator of
+\(\Phi\)."><title>Within-person VAR(1) estimated from complete adjacent pairs — fit_pairs • silentema</title><script src="../deps/jquery-3.6.1/jquery-3.6.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_3-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Code_Pro-0.4.8/font.css" rel="stylesheet"><link href="../deps/Source_Serif_4-0.4.8/font.css" rel="stylesheet"><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Within-person VAR(1) estimated from complete adjacent pairs — fit_pairs"><meta property="og:description" content="Estimates the lagged-coefficient matrix \(\Phi\), the innovation
 covariance \(\Psi\), person intercepts and person means from complete
 adjacent prompt pairs, with person-specific intercepts (the within
 estimator). This is the estimator that recovers the transition kernel under
 the recoverable motifs (M0, M1, M3, M4 and their combinations, and M5 with
 an observed context; see recoverability). Optional weights
 turn it into the inverse-probability-weighted or tilted estimator. By
-default the split-panel jackknife of Dhaene and Jochmans (2015) removes the
-finite-\(T\) (Nickell) bias of the within estimator of \(\Phi\)."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+default the half-panel (split-panel) jackknife of Dhaene and Jochmans (2015)
+removes the finite-\(T\) (Nickell) bias of the within estimator of
+\(\Phi\)."><!-- mathjax --><script src="file:///usr/share/javascript/mathjax/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -73,7 +75,7 @@ finite-\(T\) (Nickell) bias of the within estimator of \(\Phi\)."><!-- mathjax -
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Within-person VAR(1) estimated from complete adjacent prompts</h1>
+      <img src="" class="logo" alt=""><h1>Within-person VAR(1) estimated from complete adjacent pairs</h1>
       <small class="dont-index">Source: <a href="https://github.com/hsiutingyu/silentema/blob/HEAD/R/fit_pairs.R" class="external-link"><code>R/fit_pairs.R</code></a></small>
       <div class="d-none name"><code>fit_pairs.Rd</code></div>
     </div>
@@ -86,8 +88,9 @@ estimator). This is the estimator that recovers the transition kernel under
 the recoverable motifs (M0, M1, M3, M4 and their combinations, and M5 with
 an observed context; see <code><a href="recoverability.html">recoverability</a></code>). Optional weights
 turn it into the inverse-probability-weighted or tilted estimator. By
-default the split-panel jackknife of Dhaene and Jochmans (2015) removes the
-finite-\(T\) (Nickell) bias of the within estimator of \(\Phi\).</p>
+default the half-panel (split-panel) jackknife of Dhaene and Jochmans (2015)
+removes the finite-\(T\) (Nickell) bias of the within estimator of
+\(\Phi\).</p>
     </div>
 
     <div class="section level2">
@@ -127,8 +130,9 @@ day (the overnight gap is not a lag-1 transition).</p></dd>
 
 
 <dt>R</dt>
-<dd><p>Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all <code>vars</code> are non-missing.</p></dd>
+<dd><p>Name of the response-indicator column (0/1, no <code>NA</code>). If the
+default name is not among the columns of <code>data</code>, a prompt counts as
+answered when all <code>vars</code> are non-missing; any other name must exist.</p></dd>
 
 
 <dt>weights</dt>
@@ -142,7 +146,9 @@ order returned by <code><a href="make_pairs.html">make_pairs</a></code>).</p></d
 
 <dt>min_pairs</dt>
 <dd><p>Persons with fewer complete pairs are dropped from the
-between-person summaries (they still contribute to \(\Phi\)).</p></dd>
+between-person summaries (they still contribute to \(\Phi\)). A person
+can have at most \(T - 1\) pairs, so <code>min_pairs</code> must be smaller
+than the number of prompts per person.</p></dd>
 
 
 <dt>bias_correct</dt>
@@ -188,7 +194,8 @@ at each person's mean covariate level.</p></dd>
 <p></p>
 <p><code>vcov_Phi</code> (cluster-robust covariance of the stacked rows of</p>
 <p></p>
-<p><code>Phi</code>), <code>n_pairs</code>, <code>n_persons</code>, <code>n_pairs_person</code>,</p>
+<p><code>Phi</code>), <code>n_pairs</code>, <code>n_persons</code> (persons with at least one
+  complete pair), <code>n_pairs_person</code>,</p>
 <p></p>
 <p><code>n_dropped</code>, <code>weights</code>, <code>pairs</code> (the</p>
 <p></p>

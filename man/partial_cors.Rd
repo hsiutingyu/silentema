@@ -16,7 +16,11 @@ The matrix of partial correlations (the contemporaneous network
   when \code{S} is an innovation covariance) with unit diagonal.
 }
 \description{
-Partial correlations from a covariance matrix
+Inverts the covariance matrix (or takes the precision matrix as given) and
+standardizes its negative off-diagonal elements. Applied to the innovation
+covariance of the VAR(1), the result is the contemporaneous network: the
+partial correlations of the states at the same prompt given the previous
+prompt and the other states.
 }
 \examples{
 round(partial_cors(default_params()$Psi), 2)

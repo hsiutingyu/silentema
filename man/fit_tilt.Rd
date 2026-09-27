@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_tilt.R
 \name{fit_tilt}
 \alias{fit_tilt}
-\title{Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed sensitivity value}
+\title{Tilted (self-censoring-adjusted) within-person VAR(1) at a fixed value of the sensitivity parameter}
 \usage{
 fit_tilt(
   data,
@@ -27,18 +27,19 @@ fit_tilt(
 
 \item{vars}{Names of the state columns.}
 
-\item{delta}{Numeric vector (length = number of variables) of
-sensitivity coefficients in probit units per unit of the state; a scalar
-is applied to the first variable. Negative values encode "high states
-are skipped".}
+\item{delta}{The sensitivity parameter: a numeric vector (length = number
+of variables) of selection coefficients in probit units per unit of the
+state; a scalar is applied to the first variable. Negative values encode
+"high states are skipped".}
 
 \item{id, time}{Names of the person and prompt-index columns.}
 
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{propensity}{\code{"common"} (one intercept) or \code{"person"}
 (one intercept per person; use when a person-propensity motif M4 is
@@ -74,11 +75,11 @@ An object of class \code{c("tilt_fit", "pairs_fit")}: a
 }
 \description{
 Sensitivity analysis for motif M2 (self-censoring). The selection model
-\eqn{P(R_t = 1 \mid X_t = x) = \Phi_N(\alpha + \delta' x)} is held at a fixed
+\eqn{P(R_t = 1 \mid X_t = x) = \Phi_N(\alpha + \delta' x)}{P(R_t = 1 | X_t = x) = Phi_N(alpha + delta' x)} is held at a fixed
 sensitivity vector \eqn{\delta} that is never estimated from the fit. The
 response intercept is calibrated so that the model-implied response rate
 given the observed history matches the observed one, and complete pairs
-are reweighted by \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid x_t)}
+are reweighted by \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid x_t)}{w_t = P(R_t = 1 | x_{t-1}) / P(R_t = 1 | x_t)}
 (inverse-probability weighting with a stabilized numerator). Weighted
 within-person regression and intercept calibration are iterated to a
 fixed point; the population parameters are a fixed point when

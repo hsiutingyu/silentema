@@ -19,7 +19,7 @@
 #'   specification of dynamic structural equation models with equally spaced
 #'   occasions); there is no \code{day} argument. Standard errors are not
 #'   computed (the estimator serves as the MAR benchmark in the simulation
-#'   studies). \code{loglik} holds the log-likelihood evaluated at the
+#'   studies of Yu, 2026). \code{loglik} holds the log-likelihood evaluated at the
 #'   parameters entering each EM iteration, so its last element belongs to the
 #'   penultimate iterate; \code{\link{loglik_fiml}} evaluates the returned
 #'   estimates.
@@ -46,28 +46,30 @@
 fit_fiml <- function(data, vars, id = "id", time = "time", R = "R", start = NULL,
                      max_iter = 200L, tol = 1e-5, verbose = FALSE) {
   p <- length(vars)
-  check_columns(data, c(vars, id, time, if (!is.null(R) && R %in% names(data)) R))
-  if (!is.numeric(data[[time]]) || any(abs(data[[time]] - round(data[[time]])) > 1e-8, na.rm = TRUE))
-    stop("'", time, "' must be an integer prompt index (1, 2, 3, ... within person); see ?make_pairs")
-  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]
+  check_columns(data, c(vars, id, time))
+  check_time(data, time)
+  Rv <- response_indicator(data, vars, R)
+  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]; Rv <- Rv[ord]
   ids <- unique(data[[id]]); N <- length(ids)
   Tn <- max(data[[time]]) - min(data[[time]]) + 1L
-  if (Tn < 2L) stop("at least two prompts per person are needed")
+  if (Tn < 2L) stop("the prompt index must span at least two prompts")
+  if (nrow(data) < N * Tn) warning("some persons have no row for some prompt indices between the first and the last; those prompts are treated as skipped")
   t0 <- min(data[[time]])
   Y <- array(NaN, c(p, Tn, N)); Rm <- matrix(0L, Tn, N)
-  Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
   Xm <- as.matrix(data[, vars, drop = FALSE])
   ii <- match(data[[id]], ids); tt <- data[[time]] - t0 + 1L
   for (r in seq_len(nrow(data))) if (Rv[r] == 1L) { Y[, tt[r], ii[r]] <- Xm[r, ]; Rm[tt[r], ii[r]] <- 1L }
   if (is.null(start)) {
-    f0 <- tryCatch(fit_pairs(data, vars, id, time, NULL, R), error = function(e) NULL)
+    f0 <- tryCatch(suppressWarnings(fit_pairs(data, vars, id, time, NULL, R)), error = function(e) NULL)   # starting values only
     if (is.null(f0)) start <- list(Phi = diag(0.3, p), Psi = diag(stats::var(Xm, na.rm = TRUE)) * diag(p) * 0.7,
                                    mu = colMeans(Xm, na.rm = TRUE), Sigma_mu = diag(0.3, p))
     else {
       # the covariance of the observed person means is always positive definite; the jackknifed
       # between-person covariance need not be, and a singular start is an absorbing state of EM
-      Smu0 <- if (!is.null(f0$Sigma_mu_obs) && all(is.finite(f0$Sigma_mu_obs))) f0$Sigma_mu_obs else f0$Sigma_mu_ls
-      start <- list(Phi = f0$Phi, Psi = f0$Psi, mu = f0$mu_obs_person, Sigma_mu = Smu0)
+      Smu0 <- if (!is.null(f0$Sigma_mu_obs) && all(is.finite(f0$Sigma_mu_obs))) f0$Sigma_mu_obs else
+        if (all(is.finite(f0$Sigma_mu_ls))) f0$Sigma_mu_ls else diag(0.3 * mean(diag(f0$Psi)), p)   # few persons: no between-person covariance yet
+      mu0 <- if (all(is.finite(f0$mu_obs_person))) f0$mu_obs_person else colMeans(Xm, na.rm = TRUE)
+      start <- list(Phi = f0$Phi, Psi = f0$Psi, mu = mu0, Sigma_mu = Smu0)
     }
   }
   # regularise the start: eigenvalues of Sigma_mu bounded below by 5% of its average variance
@@ -99,8 +101,19 @@ print.fiml_fit <- function(x, digits = 3, ...) {
 }
 
 #' Log-likelihood of the two-level VAR(1) at given parameters (MAR)
+#'
+#' Evaluates, without fitting, the likelihood that \code{\link{fit_fiml}}
+#' maximizes: the Gaussian likelihood of the answered states under the
+#' two-level VAR(1) with random person means, skipped prompts integrated out
+#' as missing at random. Useful for comparing fits, for profile likelihoods,
+#' and for checking a fit against the trace of the EM iterations.
 #' @inheritParams fit_fiml
-#' @param Phi,Psi,mu,Sigma_mu,Sigma0 Parameter values.
+#' @param Phi,Psi,mu,Sigma_mu,Sigma0 Parameter values: the \eqn{p \times p}
+#'   lagged-coefficient matrix, the \eqn{p \times p} innovation covariance,
+#'   the length-\eqn{p} population mean, the \eqn{p \times p} between-person
+#'   covariance of the person means, and the \eqn{p \times p} covariance of
+#'   the within-person deviation at the first prompt (by default the stationary
+#'   covariance implied by \code{Phi} and \code{Psi}).
 #' @return A single number, the log-likelihood of the observed states under
 #'   the two-level VAR(1) with the given parameters, skipped prompts treated as
 #'   missing at random.
@@ -115,11 +128,13 @@ print.fiml_fit <- function(x, digits = 3, ...) {
 loglik_fiml <- function(data, vars, Phi, Psi, mu, Sigma_mu, Sigma0 = stationary_cov(Phi, Psi),
                         id = "id", time = "time", R = "R") {
   p <- length(vars)
-  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]
+  check_columns(data, c(vars, id, time))
+  check_time(data, time)
+  Rv <- response_indicator(data, vars, R)
+  ord <- order(data[[id]], data[[time]]); data <- data[ord, , drop = FALSE]; Rv <- Rv[ord]
   ids <- unique(data[[id]]); N <- length(ids)
   Tn <- max(data[[time]]) - min(data[[time]]) + 1L; t0 <- min(data[[time]])
   Y <- array(NaN, c(p, Tn, N)); Rm <- matrix(0L, Tn, N)
-  Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
   Xm <- as.matrix(data[, vars, drop = FALSE]); ii <- match(data[[id]], ids); tt <- data[[time]] - t0 + 1L
   for (r in seq_len(nrow(data))) if (Rv[r] == 1L) { Y[, tt[r], ii[r]] <- Xm[r, ]; Rm[tt[r], ii[r]] <- 1L }
   kalman_loglik_cpp(Y, Rm, Phi, Psi, mu, Sigma_mu, Sigma0)

@@ -9,7 +9,8 @@
 \arguments{
 \item{x}{A \code{dm_graph}.}
 
-\item{...}{Further arguments passed to \code{plot}.}
+\item{...}{Further arguments passed to \code{plot}; \code{main} replaces
+the default title.}
 }
 \value{
 Invisibly, a numeric matrix with one row per node and the columns

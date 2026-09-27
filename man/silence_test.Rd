@@ -27,14 +27,15 @@ silence_test(
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{se}{\code{"cluster"} (cluster-robust by person with \eqn{t(G-1)} and
-\eqn{F(q, G-1)} reference distributions; default when there are at least
-10 persons) or \code{"dayblock"} (block bootstrap that resamples
-person-day blocks with replacement, for single-person data; requires
-\code{day}).}
+\eqn{F(q, G-1)} reference distributions; the default when there are at
+least 10 persons) or \code{"dayblock"} (block bootstrap that resamples
+person-day blocks with replacement; the default with fewer than 10
+persons; requires \code{day}).}
 
 \item{B}{Number of bootstrap resamples for \code{se = "dayblock"}.}
 
@@ -46,8 +47,9 @@ state is restored).}
 \value{
 An object of class \code{c("silence_test", "data.frame")}: a data
   frame with one row per state variable and the columns \code{variable},
-  \code{coef_R} (coefficient of \eqn{R_t}), \code{se}, \code{z} and
-  \code{p}, and the attributes \code{joint} (a named vector with the Wald
+  \code{coef_R} (coefficient of \eqn{R_t}), \code{se}, \code{z} (the ratio
+  of the coefficient to its standard error, referred to \eqn{t(G - 1)} under
+  \code{se = "cluster"}) and \code{p}, and the attributes \code{joint} (a named vector with the Wald
   statistic over all variables, its degrees of freedom and its p value),
   \code{n_triples}, \code{n_skipped} (triples with a skipped middle
   prompt) and \code{se} (the method used). It has a \code{print} method.

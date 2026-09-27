@@ -192,7 +192,9 @@ dsep <- function(g, x, y, z = character(0)) {
 #' part of the data.
 #'
 #' @param g A \code{dm_graph}.
-#' @param t Index of the focal prompt inside the window (default: the third).
+#' @param t Index of the focal prompt inside the window (default: the third;
+#'   it must satisfy \code{3 <= t <= window - 1}, so that the prompts
+#'   \eqn{t-2} to \eqn{t+1} exist).
 #' @return A data frame of class \code{"recoverability"} with one row per
 #'   estimand and the columns \code{estimand}, \code{recoverable} (logical;
 #'   \code{NA} for the two test rows, which report expected behavior rather
@@ -347,7 +349,8 @@ print.recoverability <- function(x, ...) {
 #' grayscale. Latent nodes are drawn as open circles.
 #'
 #' @param x A \code{dm_graph}.
-#' @param ... Further arguments passed to \code{plot}.
+#' @param ... Further arguments passed to \code{plot}; \code{main} replaces
+#'   the default title.
 #' @return Invisibly, a numeric matrix with one row per node and the columns
 #'   \code{x} and \code{y} (the plotting coordinates). Called for its side
 #'   effect, the plot.
@@ -368,6 +371,7 @@ plot.dm_graph <- function(x, ...) {
       pos[v, ] <- c(k, rowy[[typ]])
     }
   }
+  dots <- list(...)
   graphics::plot(NA, xlim = c(0.5, W + 0.5), ylim = c(0.6, 7.9), axes = FALSE, xlab = "prompt", ylab = "", ...)
   graphics::axis(1, at = seq_len(W), labels = ifelse(seq_len(W) == 3, "t", ifelse(seq_len(W) < 3, paste0("t-", 3 - seq_len(W)), paste0("t+", seq_len(W) - 3))))
   structural <- (x$edges[, "from"] == "eta" & grepl("^X", x$edges[, "to"])) |
@@ -391,7 +395,7 @@ plot.dm_graph <- function(x, ...) {
   lab <- as.list(nodes)
   lab[nodes == "eta"] <- list(expression(eta)); lab[nodes == "zeta"] <- list(expression(zeta))
   for (i in seq_along(nodes)) graphics::text(pos[i, 1], pos[i, 2], labels = lab[[i]], cex = 0.75)
-  graphics::title(main = paste("dm-graph:", paste(x$motifs, collapse = " + ")))
+  if (is.null(dots$main)) graphics::title(main = paste("dm-graph:", paste(x$motifs, collapse = " + ")))
   graphics::legend("bottomleft", legend = c("structural edge", "motif edge", "latent node"), lty = c(1, 2, NA), pch = c(NA, NA, 1),
                    col = c("grey55", "black", "black"), lwd = c(1, 1.6, NA), bty = "n", cex = 0.8, horiz = TRUE)
   invisible(pos)

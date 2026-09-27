@@ -2,9 +2,9 @@
 #'
 #' For motif M5 with an observed context variable (\code{C_t -> X_t} and
 #' \code{C_t -> R_t}), complete adjacent pairs are reweighted by the
-#' stabilized weight \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid c_t, x_{t-1})}
-#' so that the context-marginal transition kernel is recovered (the observed-
-#' context case of the recoverability results in Yu, 2026). Both response models are probit regressions fitted on all
+#' stabilized weight \eqn{w_t = P(R_t = 1 \mid x_{t-1}) / P(R_t = 1 \mid c_t, x_{t-1})}{w_t = P(R_t = 1 | x_{t-1}) / P(R_t = 1 | c_t, x_{t-1})}
+#' so that the context-marginal transition kernel is recovered (the
+#' observed-context case of the recoverability results in Yu, 2026). Both response models are probit regressions fitted on all
 #' prompts whose predecessor was answered (the response indicator is always
 #' observed), with person-specific intercepts absorbed by including the
 #' person's observed response rate as an offset-like covariate when

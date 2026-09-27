@@ -36,11 +36,11 @@ persistence_contrast <- function(data, id = "id", time = "time", day = NULL, R =
   mean(cur[prev == 1L]) - mean(cur[prev == 0L])
 }
 
-#' Calibrate the self-censoring sensitivity value from a design feature
+#' Calibrate the self-censoring sensitivity parameter from a design feature
 #'
 #' Maps an observed statistic that is sensitive to self-censoring onto the
-#' tilt profile and returns the sensitivity value at which the fitted model
-#' reproduces it. Three statistics are supported: the sensor gap (the
+#' tilt profile and returns the value of the sensitivity parameter at which
+#' the fitted model reproduces it. Three statistics are supported: the sensor gap (the
 #' coefficient of \eqn{R_t} in \code{\link{sensor_gap_test}}; needs an
 #' always-observed sensor), the probe contrast (the within-person difference
 #' between the states reported at randomized forced-response probes and at
@@ -53,7 +53,7 @@ persistence_contrast <- function(data, id = "id", time = "time", day = NULL, R =
 #' contrast implied by data simulated from the fitted tilt model at every grid
 #' value. When burden (motif M3) is declared together with self-censoring, the
 #' post-skip contrast also carries the collider contribution of
-#' \eqn{R_t \to R_{t+1} \leftarrow X_{t+1}}, which works against the
+#' \eqn{R_t \to R_{t+1} \leftarrow X_{t+1}}{R_t -> R_{t+1} <- X_{t+1}}, which works against the
 #' self-censoring signal; with \code{burden = "fit"} the simulated model
 #' includes a burden term whose size is calibrated, at every grid value, so
 #' that the simulated response persistence (the response rate after an
@@ -80,8 +80,8 @@ persistence_contrast <- function(data, id = "id", time = "time", day = NULL, R =
 #'   uses (and advances) the current stream.
 #' @param level Confidence level for the interval obtained by inverting the
 #'   observed statistic's confidence limits through the predicted curve (the
-#'   uncertainty of the curve itself is ignored; the simulation study reports
-#'   the empirical coverage of this interval).
+#'   uncertainty of the curve itself is ignored; Yu, 2026, reports the
+#'   empirical coverage of this interval).
 #' @param boot Number of cluster-bootstrap resamples for a percentile
 #'   interval that refits the profile in every resample (0 = none).
 #' @param boot_unit Resampling unit: persons, or days (for single-person data).
@@ -268,8 +268,9 @@ print.delta_calibration <- function(x, digits = 3, ...) {
               x$interval[1], x$interval[2]))
   if (is.na(x$delta_hat)) cat("  (no crossing on the grid: the model-implied curve does not reach the observed value; widen delta_grid or report the profile band)\n")
   if (!is.na(x$n_crossings) && x$n_crossings > 1) cat(sprintf("  (%d crossings on the grid; the one nearest zero is reported)\n", x$n_crossings))
-  if (!is.null(x$boot_interval)) cat(sprintf("  bootstrap (%d resamples): SE %.3f, percentile interval [%.3f, %.3f]\n",
-                                             sum(!is.na(x$boot)), x$boot_se, x$boot_interval[1], x$boot_interval[2]))
+  if (!is.null(x$boot_interval)) cat(sprintf("  bootstrap (%d resamples%s): SE %.3f, percentile interval [%.3f, %.3f]\n",
+                                             sum(!is.na(x$boot)), if (anyNA(x$boot)) sprintf(", %d failed or not identified", sum(is.na(x$boot))) else "",
+                                             x$boot_se, x$boot_interval[1], x$boot_interval[2]))
   invisible(x)
 }
 
@@ -308,7 +309,8 @@ plot.delta_calibration <- function(x, ...) {
 #' person's level and propensity is preserved, and the probit self-censoring
 #' model at the fit's sensitivity value and calibrated intercept. An optional
 #' burden term lowers the propensity after a skipped prompt.
-#' @param fit A \code{tilt_fit} (or \code{pairs_fit} with \code{delta = 0}).
+#' @param fit A \code{tilt_fit} (or a plain \code{pairs_fit}, which is treated
+#'   as a fit at \code{delta = 0}).
 #' @param N,T Persons and prompts.
 #' @param days Optional number of prompts per day; adds a \code{day} column and
 #'   restarts the burden term at the first prompt of each day.

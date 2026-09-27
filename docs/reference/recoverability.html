@@ -96,7 +96,9 @@ part of the data.</p>
 
 
 <dt>t</dt>
-<dd><p>Index of the focal prompt inside the window (default: the third).</p></dd>
+<dd><p>Index of the focal prompt inside the window (default: the third;
+it must satisfy <code>3 &lt;= t &lt;= window - 1</code>, so that the prompts
+\(t-2\) to \(t+1\) exist).</p></dd>
 
 </dl></div>
     <div class="section level2">

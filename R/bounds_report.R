@@ -11,8 +11,9 @@
 #' @param L,U Lower and upper limits of the response scale (scalars or one
 #'   value per variable).
 #' @return A data frame with one row per person and variable and the columns
-#'   \code{id}, \code{variable}, \code{response_rate}, \code{mean_observed},
-#'   \code{lower} and \code{upper}.
+#'   \code{id}, \code{variable}, \code{response_rate}, \code{mean_observed}
+#'   (\code{NA} for a person without any answered prompt, whose bounds are then
+#'   the whole scale), \code{lower} and \code{upper}.
 #' @references Manski, C. F. (2003). \emph{Partial identification of
 #'   probability distributions}. Springer. \doi{10.1007/b97478}
 #' @examples
@@ -24,8 +25,10 @@
 #' @export
 bounds_support <- function(data, vars, L, U, id = "id", R = "R") {
   p <- length(vars)
+  check_columns(data, c(vars, id))
   if (length(L) == 1L) L <- rep(L, p); if (length(U) == 1L) U <- rep(U, p)
-  Rv <- if (!is.null(R) && R %in% names(data)) data[[R]] else as.integer(stats::complete.cases(data[, vars, drop = FALSE]))
+  if (length(L) != p || length(U) != p) stop("'L' and 'U' must be scalars or have one value per variable")
+  Rv <- response_indicator(data, vars, R)
   ids <- unique(data[[id]])
   out <- list()
   for (i in ids) {
@@ -33,9 +36,10 @@ bounds_support <- function(data, vars, L, U, id = "id", R = "R") {
     pi_i <- mean(Rv[sel])
     for (j in seq_len(p)) {
       xo <- data[[vars[j]]][sel & Rv == 1L]
-      m <- mean(xo)
+      m <- if (length(xo)) mean(xo) else NA_real_       # no answered prompt: the bounds are the whole scale
       out[[length(out) + 1L]] <- data.frame(id = i, variable = vars[j], response_rate = pi_i, mean_observed = m,
-                                            lower = pi_i * m + (1 - pi_i) * L[j], upper = pi_i * m + (1 - pi_i) * U[j])
+                                            lower = if (pi_i > 0) pi_i * m + (1 - pi_i) * L[j] else L[j],
+                                            upper = if (pi_i > 0) pi_i * m + (1 - pi_i) * U[j] else U[j])
     }
   }
   do.call(rbind, out)
@@ -102,7 +106,7 @@ missingness_declaration <- function(g, rec = NULL, silence = NULL, sensor_gap = 
   if (is.null(cals)) sec_sens <- c(sec_sens, "- Plausible interval and its source (sensor calibration / probe calibration / post-skip calibration / elicitation): [to complete]") else
     for (cl in cals) sec_sens <- c(sec_sens, sprintf("- Calibration by the %s method%s: delta = %s, %d%% interval [%s, %s]%s",
                                                      cl$method, if (identical(cl$burden, "fit")) " (burden term fitted)" else "",
-                                                     f3(cl$delta_hat), round(100 * cl$level), f3(cl$interval[1]), f3(cl$interval[2]),
+                                                     if (is.na(cl$delta_hat)) "not identified on the grid" else f3(cl$delta_hat), round(100 * cl$level), f3(cl$interval[1]), f3(cl$interval[2]),
                                                      if (!is.null(cl$boot_interval)) sprintf("; bootstrap percentile interval [%s, %s]", f3(cl$boot_interval[1]), f3(cl$boot_interval[2])) else ""))
   if (!is.null(profile) && !is.null(plausible)) {
     be <- break_even(profile, delta_max = max(abs(plausible)))

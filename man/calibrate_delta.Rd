@@ -2,7 +2,7 @@
 % Please edit documentation in R/calibrate.R
 \name{calibrate_delta}
 \alias{calibrate_delta}
-\title{Calibrate the self-censoring sensitivity value from a design feature}
+\title{Calibrate the self-censoring sensitivity parameter from a design feature}
 \usage{
 calibrate_delta(
   profile,
@@ -53,8 +53,8 @@ uses (and advances) the current stream.}
 
 \item{level}{Confidence level for the interval obtained by inverting the
 observed statistic's confidence limits through the predicted curve (the
-uncertainty of the curve itself is ignored; the simulation study reports
-the empirical coverage of this interval).}
+uncertainty of the curve itself is ignored; Yu, 2026, reports the
+empirical coverage of this interval).}
 
 \item{boot}{Number of cluster-bootstrap resamples for a percentile
 interval that refits the profile in every resample (0 = none).}
@@ -85,8 +85,8 @@ An object of class \code{"delta_calibration"}: a list with
 }
 \description{
 Maps an observed statistic that is sensitive to self-censoring onto the
-tilt profile and returns the sensitivity value at which the fitted model
-reproduces it. Three statistics are supported: the sensor gap (the
+tilt profile and returns the value of the sensitivity parameter at which
+the fitted model reproduces it. Three statistics are supported: the sensor gap (the
 coefficient of \eqn{R_t} in \code{\link{sensor_gap_test}}; needs an
 always-observed sensor), the probe contrast (the within-person difference
 between the states reported at randomized forced-response probes and at
@@ -100,7 +100,7 @@ The post-skip calibration compares the observed post-skip contrast with the
 contrast implied by data simulated from the fitted tilt model at every grid
 value. When burden (motif M3) is declared together with self-censoring, the
 post-skip contrast also carries the collider contribution of
-\eqn{R_t \to R_{t+1} \leftarrow X_{t+1}}, which works against the
+\eqn{R_t \to R_{t+1} \leftarrow X_{t+1}}{R_t -> R_{t+1} <- X_{t+1}}, which works against the
 self-censoring signal; with \code{burden = "fit"} the simulated model
 includes a burden term whose size is calibrated, at every grid value, so
 that the simulated response persistence (the response rate after an

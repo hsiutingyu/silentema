@@ -29,14 +29,15 @@ sensor_gap_test(
 \item{day}{Optional name of a day column; pairs are formed only within a
 day (the overnight gap is not a lag-1 transition).}
 
-\item{R}{Optional name of the response-indicator column. If missing, a
-prompt counts as answered when all \code{vars} are non-missing.}
+\item{R}{Name of the response-indicator column (0/1, no \code{NA}). If the
+default name is not among the columns of \code{data}, a prompt counts as
+answered when all \code{vars} are non-missing; any other name must exist.}
 
 \item{se}{\code{"cluster"} (cluster-robust by person with \eqn{t(G-1)} and
-\eqn{F(q, G-1)} reference distributions; default when there are at least
-10 persons) or \code{"dayblock"} (block bootstrap that resamples
-person-day blocks with replacement, for single-person data; requires
-\code{day}).}
+\eqn{F(q, G-1)} reference distributions; the default when there are at
+least 10 persons) or \code{"dayblock"} (block bootstrap that resamples
+person-day blocks with replacement; the default with fewer than 10
+persons; requires \code{day}).}
 
 \item{B}{Number of bootstrap resamples for \code{se = "dayblock"}.}
 
