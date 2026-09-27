@@ -1,0 +1,50 @@
+Package: silentema
+Type: Package
+Title: Dynamic Missingness Graphs and Sensitivity Analysis for EMA Data
+Version: 1.0.0
+Authors@R: person(given = "Hsiu-Ting", family = "Yu", email = "hsiutingyu@gmail.com",
+                  role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0002-3668-8033"))
+Description: Tools for informative nonresponse in ecological momentary assessment
+    (EMA) and other experience-sampling designs. Declares the assumed nonresponse
+    mechanism as a dynamic missingness graph built from a taxonomy of seven
+    motifs, following the graphical missing-data framework of Mohan and Pearl
+    (2021) <doi:10.1080/01621459.2021.1874961>; checks by d-separation which
+    within-person and between-person estimands of a two-level vector
+    autoregressive model remain recoverable and by which estimator; tests
+    whether skipped prompts were informative (the silence test and the
+    sensor-gap test, with cluster-robust inference after Cameron and Miller
+    (2015) <doi:10.3368/jhr.50.2.317>); estimates the temporal and
+    contemporaneous networks from answered adjacent prompts with the half-panel
+    jackknife of Dhaene and Jochmans (2015) <doi:10.1093/restud/rdv007>, by
+    inverse-probability weighting on an observed context, and by
+    full-information maximum likelihood with the state-space EM algorithm of
+    Shumway and Stoffer (1982) <doi:10.1111/j.1467-9892.1982.tb00349.x>;
+    profiles the estimates over a self-censoring sensitivity parameter
+    (inverse-probability weighting with a fixed probit selection model whose
+    intercept is calibrated to the response rate); calibrates that parameter
+    from passive sensors, randomized probes, or the post-skip contrast;
+    computes worst-case bounds for person means in the spirit of Manski (2003)
+    <doi:10.1007/b97478>; writes a preregistration-ready missingness
+    declaration; and simulates experience-sampling data under every motif.
+    The methods are described in Yu (2026, manuscript under review); the
+    accompanying materials are archived at <https://osf.io/x6d2t/>.
+License: GPL (>= 3)
+URL: https://github.com/hsiutingyu/silentema,
+    https://hsiutingyu.github.io/silentema/, https://osf.io/x6d2t/
+BugReports: https://github.com/hsiutingyu/silentema/issues
+Encoding: UTF-8
+Language: en-US
+Depends: R (>= 4.1.0)
+Imports:
+    Rcpp (>= 1.0.7),
+    stats,
+    graphics,
+    grDevices
+LinkingTo: Rcpp, RcppArmadillo
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.3.1
+Config/testthat/edition: 3

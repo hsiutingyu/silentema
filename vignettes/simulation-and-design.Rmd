@@ -1,0 +1,198 @@
+---
+title: "Simulating experience-sampling data and planning a design"
+author: "Hsiu-Ting Yu"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Simulating experience-sampling data and planning a design}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2)
+library(silentema)
+```
+
+## The generating model
+
+`simulate_ema()` generates data from a two-level VAR(1): person *i* has a mean vector *mu~i~* drawn from a multivariate normal with mean `mu` and covariance `Sigma_mu`, and the momentary states follow
+
+$$X_{it} = \mu_i + \Phi (X_{i,t-1} - \mu_i) + \varepsilon_{it}, \qquad \varepsilon_{it} \sim N(0, \Psi).$$
+
+The population parameters default to `default_params()`: four variables (negative affect, positive affect, stress, fatigue) with autoregressive coefficients between .30 and .45, a few cross-lagged effects, a sparse contemporaneous network in the innovations, and stationary variances scaled to one.
+
+```{r params}
+p <- default_params()
+p$Phi
+round(partial_cors(p$Psi), 2)
+round(diag(stationary_cov(p$Phi, p$Psi)), 3)
+```
+
+Whole prompts are then deleted according to one or more missingness motifs. The response model is a probit,
+
+$$P(R_{it} = 1) = \Phi_N(\alpha_0 + a_i + \text{motif terms}),$$
+
+and the intercept alpha~0~ is calibrated numerically so that the realized response rate over the recorded prompts equals `compliance`. This calibration is what makes cells with different mechanisms comparable at the same response rate.
+
+```{r basic}
+sim <- simulate_ema(N = 50, T = 30, motifs = "M0", compliance = 0.75, seed = 1)
+sim
+head(sim$data)
+```
+
+The result holds the observed data (`data`, with `NA` at skipped prompts), the complete states before deletion (`full`), the true person means (`mu_i`), the calibrated intercept (`alpha0`) and every setting. Keeping `full` makes it easy to check any estimator against the truth:
+
+```{r full}
+f <- fit_pairs(sim$data, sim$vars)
+round(cbind(estimate = f$Phi[, 1], truth = p$Phi[, 1]), 3)
+```
+
+## Every motif and its parameters
+
+The table lists the argument that controls each motif and the term it adds to the probit index (or to the state equation).
+
+| Motif | Argument(s) | Term |
+|---|---|---|
+| M1 lagged-state dependence | `gamma` | `gamma' X_{t-1}` (a scalar applies to the first variable) |
+| M2 self-censoring | `delta` | `delta' X_t` (negative: high states are skipped) |
+| M3 burden | `kappa_R`, `burden` | `kappa_R (R_{t-1} - compliance)` and a linear time trend of size `burden` |
+| M4 person propensity | `rho_propensity`, `sd_propensity` | `a_i`, with correlation `rho_propensity` with the person's mean on the first variable |
+| M5 context | `p_context`, `rho_context`, `gamma_C`, `kappa_C` | binary `C_t` shifts the states by `gamma_C` and the index by `-kappa_C (C_t - p_context)` |
+| M6 reactivity | `rho_react` | the state equation gains `rho_react (R_{t-1} - compliance)` |
+
+Both `gamma` and `delta` act on the raw (uncentered) state, so a self-censoring person with a high typical level also responds less often overall; this is deliberate, because it is how self-censoring behaves in practice.
+
+```{r motifs}
+rate_after <- function(motifs, ...) {
+  s <- simulate_ema(N = 50, T = 30, motifs = motifs, compliance = 0.7, seed = 2, ...)
+  fc <- fatigue_check(s$data)
+  c(response_rate = round(mean(s$data$R), 3), persistence = round(fc$difference, 3))
+}
+rbind(M0 = rate_after("M0"), M1 = rate_after("M1"), M2 = rate_after("M2", delta = -1),
+      M3 = rate_after("M3", kappa_R = 1), M4 = rate_after("M4"), M6 = rate_after("M6"))
+```
+
+Every mechanism hits the target response rate; they differ in how the skips are arranged in time and in who skips.
+
+### Design features
+
+Three optional channels correspond to the calibration designs of `calibrate_delta()`:
+
+* `sensor_cor` adds an always-observed sensor `S` correlated with the first state variable (within person);
+* `p_probe` adds randomized probe prompts `Z` that force a response;
+* the context of M5 is always recorded in column `C`, so an analysis may treat it as observed (`fit_pairs(covariates = "C")`, `fit_ipw()`) or ignore it (latent context).
+
+`days` adds a `day` column, which the estimators use to form pairs within days only.
+
+```{r channels}
+sim2 <- simulate_ema(N = 30, T = 20, motifs = c("M2", "M5"), delta = -1, sensor_cor = 0.6,
+                     p_probe = 0.1, rho_context = 0.5, days = 5, seed = 3)
+names(sim2$data)
+c(probe_share = mean(sim2$data$Z), answered_at_probes = mean(sim2$data$R[sim2$data$Z == 1]),
+  context_rate = mean(sim2$data$C))
+```
+
+### Reproducibility
+
+`seed` sets the random-number seed for the simulation and restores the caller's random-number state afterwards, so a seeded call inside a larger script does not disturb the stream of that script:
+
+```{r seed}
+set.seed(100); a <- runif(1)
+set.seed(100); invisible(simulate_ema(N = 5, T = 5, seed = 7)); b <- runif(1)
+identical(a, b)
+```
+
+The same convention holds for `simulate_from_fit()`, `silence_test(se = "dayblock")` and `calibrate_delta()`.
+
+## Simulating from a fitted model
+
+`simulate_from_fit()` generates data from a fitted tilt model: the fitted VAR(1), the fitted person means and, with `propensity = "person"`, the fitted response intercepts, resampled jointly so that the association between a person's level and propensity is preserved, and the probit self-censoring model at the fit's sensitivity value. It is the engine of the post-skip calibration and a convenient parametric bootstrap.
+
+```{r fromfit}
+sim3 <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 4)
+ft <- fit_tilt(sim3$data, sim3$vars, delta = -1)
+d <- simulate_from_fit(ft, N = 60, T = 40, seed = 5)
+c(response_rate = mean(d$R), persons = length(unique(d$id)))
+# the simulated data carry the self-censoring signature of the fitted model
+silence_test(d, sim3$vars)$coef_R[1]
+```
+
+The post-skip contrast of a single simulated data set is noisy; `calibrate_delta(method = "postskip")` averages it over `n_sim` data sets at every grid value. An optional burden term (`kappa_R`) and a day structure (`days`) are available for the burden-aware calibration.
+
+## Planning a design: three small studies
+
+The simulator makes design questions concrete. Each study below is deliberately small; a real planning exercise would use more replications and the sample size of the planned study.
+
+### How much does self-censoring bias the default analysis?
+
+```{r bias}
+bias <- function(delta, reps = 20) {
+  est <- vapply(seq_len(reps), function(r) {
+    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = delta, seed = 100 + r)
+    f <- fit_pairs(s$data, s$vars)
+    c(f$Phi[1, 1], f$mu[1])
+  }, numeric(2))
+  c(bias_Phi11 = mean(est[1, ]) - p$Phi[1, 1], bias_mu1 = unname(mean(est[2, ]) - p$mu[1]))
+}
+round(rbind("delta = 0" = bias(0), "delta = -0.5" = bias(-0.5), "delta = -1" = bias(-1)), 3)
+```
+
+The autoregression is attenuated and the person mean is pulled down (people skip their high moments) in proportion to the strength of self-censoring, with the mean the more damaged of the two. With 20 replications the Monte Carlo standard error of the bias in the autoregression is about .01, so small entries should be read as noise.
+
+### Which sensor is good enough to calibrate?
+
+The precision of the sensor calibration depends on how strongly the sensor loads on the self-censored state. The loop compares the width of the calibration interval for two sensor correlations.
+
+```{r sensor-design}
+width <- function(sensor_cor, reps = 3) {
+  w <- vapply(seq_len(reps), function(r) {
+    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+                      sensor_cor = sensor_cor, seed = 200 + r)
+    pr <- tilt_profile(s$data, s$vars, delta_grid = c(-2, -1.5, -1, -0.5, 0))
+    cs <- calibrate_delta(pr, s$data, method = "sensor")
+    diff(cs$interval)
+  }, numeric(1))
+  c(median_width = median(w, na.rm = TRUE), finite = mean(is.finite(w)))
+}
+rbind("r = 0.3" = width(0.3), "r = 0.6" = width(0.6))
+```
+
+A sensor with a modest loading gives wide or open intervals; a loading around .6 gives a usable calibration at this sample size.
+
+### How many probes?
+
+```{r probe-design}
+probe_se <- function(p_probe, reps = 3) {
+  se <- vapply(seq_len(reps), function(r) {
+    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+                      p_probe = p_probe, seed = 300 + r)
+    pr <- tilt_profile(s$data, s$vars, delta_grid = c(-2, -1.5, -1, -0.5, 0), probe = "Z")
+    calibrate_delta(pr, s$data, method = "probe")$se
+  }, numeric(1))
+  c(median_se_of_contrast = median(se))
+}
+rbind("5% probes" = probe_se(0.05), "15% probes" = probe_se(0.15))
+```
+
+The standard error of the probe contrast, which the calibration inverts, shrinks roughly with the square root of the number of probe prompts. Probes also recover the transition kernel directly (`recoverability(dm_graph("M2", probe = TRUE))`), but the probe-only sample is small, so the calibration route is usually the more informative use of them.
+
+## Comparing estimators across mechanisms
+
+The last study reproduces, in miniature, the logic of the damage assessment in Yu (2026): the answered-pairs estimator and the MAR likelihood (`fit_fiml()`) are both fine under a recoverable mechanism and both biased under self-censoring.
+
+```{r estimators}
+compare <- function(motifs, ...) {
+  s <- simulate_ema(N = 80, T = 40, motifs = motifs, compliance = 0.7, seed = 6, ...)
+  c(pairs = fit_pairs(s$data, s$vars)$Phi[1, 1], fiml = fit_fiml(s$data, s$vars)$Phi[1, 1])
+}
+round(rbind(M1 = compare("M1"), M4 = compare("M4"), M2 = compare("M2", delta = -1),
+            truth = c(p$Phi[1, 1], p$Phi[1, 1])), 3)
+```
+
+One replication per cell cannot separate bias from sampling error; the pattern over many replications is in the accompanying article and in its archived simulation results.
+
+## References
+
+Yu, H.-T. (2026). What skipped prompts hide: Detecting, diagnosing, and correcting informative nonresponse in ecological momentary assessment. Manuscript under review. Materials: https://osf.io/x6d2t/

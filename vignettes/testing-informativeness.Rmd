@@ -1,0 +1,156 @@
+---
+title: "Was silence informative? The silence test, the sensor-gap test and the fatigue check"
+author: "Hsiu-Ting Yu"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Was silence informative? The silence test, the sensor-gap test and the fatigue check}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2)
+library(silentema)
+```
+
+## The question
+
+A declared dm-graph says which mechanism is assumed (see `vignette("dm-graphs")`). The tests in this vignette ask the data whether that assumption is tenable. They exploit one fact: under every recoverable mechanism, the response indicator at prompt *t* carries no information about the states beyond what the observed history already carries. If skipped prompts turn out to predict what is observed afterwards, silence was informative.
+
+Two tests and one descriptive check are available.
+
+| Function | Regression (within person) | Null holds under | Needs |
+|---|---|---|---|
+| `silence_test()` | `X_{t+1} ~ X_{t-1} + R_t` over triples with *t-1* and *t+1* answered | M0, M1, M3, M4 and combinations without M1 + M3 | nothing beyond the states |
+| `sensor_gap_test()` | `S_t ~ X_{t-1} + R_t` over prompts with an answered predecessor | all recoverable motifs, including M1 + M3 | an always-observed sensor |
+| `fatigue_check()` | response rate after an answered vs a skipped prompt; by study quarter | (descriptive) | the response indicators |
+
+All three use person fixed effects (within-person demeaning), so stable between-person differences in level or in compliance cannot produce a spurious result.
+
+## The silence test
+
+Take every triple of consecutive scheduled prompts (*t-1*, *t*, *t+1*) in which the two outer prompts were answered. The middle prompt may or may not have been answered. Regress the state at *t+1* on the state at *t-1* and the response indicator at *t*, within person. If the middle skip is uninformative, its coefficient is zero.
+
+```{r silence}
+sim2 <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 1)
+st <- silence_test(sim2$data, sim2$vars)
+st
+```
+
+The data were generated with self-censoring on negative affect (`delta = -1`: the probit propensity to respond falls by one unit per unit of negative affect). The coefficient of `R_t` for `NegA` is negative: after a *skipped* prompt (`R_t = 0`), negative affect at *t+1* is higher than after an answered one, given the state at *t-1*. The states hidden by skips were higher than the reported ones, which is exactly what self-censoring produces. The joint Wald test over all four variables combines the evidence.
+
+The result object is a data frame with attributes:
+
+```{r silence-attr}
+attr(st, "joint")
+c(triples = attr(st, "n_triples"), skipped_middle = attr(st, "n_skipped"))
+```
+
+Under a recoverable mechanism the coefficients are near zero:
+
+```{r silence-null}
+sim1 <- simulate_ema(N = 60, T = 40, motifs = "M1", compliance = 0.7, seed = 1)
+silence_test(sim1$data, sim1$vars)
+```
+
+### Reading the sign
+
+The sign of the coefficient of `R_t` on the self-censoring variable is the sign of the *tilt*: a negative coefficient means that the hidden states were higher (people skip when the state is high), a positive one that they were lower. This sign is what `tilt_profile()` and `calibrate_delta()` later quantify. Coefficients on the other variables reflect the same tilt propagated through the contemporaneous and lagged associations.
+
+### Inference
+
+With at least 10 persons the default is a cluster-robust covariance by person with *t*(*G* - 1) and *F*(*q*, *G* - 1) reference distributions (Cameron & Miller, 2015). For a single person (or very few), `se = "dayblock"` resamples person-day blocks with replacement; it needs a `day` column.
+
+```{r single}
+one <- simulate_ema(N = 1, T = 200, motifs = "M2", compliance = 0.7, delta = -1, days = 8, seed = 5)
+silence_test(one$data, one$vars, day = "day", B = 100, seed = 1)
+```
+
+With one person and a few dozen triples the test has little power; the coefficient for `NegA` has the expected sign but its bootstrap interval covers zero. Single-case analyses should lean on the sensitivity analysis rather than on the test.
+
+### Curvature
+
+Under M1 the selection on `X_t` through `R_{t+1}` makes the conditional mean of `X_{t+1}` given `X_{t-1}` slightly nonlinear; `poly = 2` adds squared lagged states. In the simulation studies of Yu (2026) the linear test kept its size within Monte Carlo error under M1, so `poly = 1` is the default.
+
+```{r poly}
+silence_test(sim1$data, sim1$vars, poly = 2)$p
+```
+
+### The M1 + M3 collider
+
+When lagged-state dependence and burden are both present, conditioning on an answered prompt at *t+1* opens a collider at `R_{t+1}`: its parents are `R_t` (burden) and `X_t` (lagged-state dependence), and `X_t` drives `X_{t+1}`. Given that the prompt at *t+1* was answered despite a skip at *t*, the state at *t* must have favored responding, so the state at *t+1* is shifted, and the silence test rejects in large samples although the transition kernel is recoverable. `recoverability()` warns about it. The coefficient has the sign *opposite* to the self-censoring signature (positive when high states lower the propensity to respond), which is one reason to run `fatigue_check()` before interpreting a rejection. Under M2 + M3 the analogous collider (with `X_{t+1}` as a parent of `R_{t+1}`) works *against* the self-censoring signal, so the test loses power. In both cases the sensor-gap test is the better instrument.
+
+```{r collider}
+sim13 <- simulate_ema(N = 300, T = 56, motifs = c("M1", "M3"), compliance = 0.7, kappa_R = 1, seed = 2)
+silence_test(sim13$data, sim13$vars)
+recoverability(dm_graph(c("M1", "M3")))$estimator[6]
+```
+
+## The sensor-gap test
+
+An always-observed channel that loads on the states (an accelerometer, heart rate, phone-usage features) turns the question around: instead of asking what happens *after* a skip, ask what the sensor recorded *at* the skipped prompt. `sensor_gap_test()` regresses the sensor at *t* on the state at *t-1* and `R_t`, within person, over all prompts whose predecessor was answered. Nothing at *t+1* is conditioned on, so the test is valid under M1 + M3 as well.
+
+```{r sensor}
+sim2s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+                      sensor_cor = 0.6, seed = 3)
+sg <- sensor_gap_test(sim2s$data, sim2s$vars, sensor = "S")
+sg
+attr(sg, "loading")
+```
+
+The sensor gap is negative: at skipped prompts the sensor recorded higher values of what it measures. The `loading` attribute gives the within-person regression of the sensor on the states at answered prompts; the calibration in `vignette("sensitivity-analysis")` uses it to translate the gap into a sensitivity value.
+
+Under a recoverable mechanism the gap is null:
+
+```{r sensor-null}
+sim1s <- simulate_ema(N = 60, T = 40, motifs = c("M1", "M3"), compliance = 0.7, sensor_cor = 0.6, seed = 3)
+sensor_gap_test(sim1s$data, sim1s$vars, sensor = "S")
+```
+
+## The fatigue check
+
+`fatigue_check()` is descriptive. It reports the response rate after an answered and after a skipped prompt, pooled and as the mean of the person-specific differences, and the response rate by study quarter. A large persistence contrast and a declining rate over quarters are what burden (M3) produces; some serial dependence in `R` also arises under M1, M2 and M4 through the autocorrelated states and the person propensities, so the check does not discriminate M3 from the other motifs by itself.
+
+```{r fatigue}
+sim3 <- simulate_ema(N = 60, T = 40, motifs = "M3", compliance = 0.7, kappa_R = 1, seed = 4)
+fatigue_check(sim3$data)
+fatigue_check(sim2$data)
+```
+
+Under burden (first output) the response rate after a skipped prompt is far below the rate after an answered one, pooled and within person. Under self-censoring alone (second output) the pooled contrast is smaller and the person-mean contrast smaller still: skips cluster in time because the states that cause them are autocorrelated, not because a skip itself lowers the next propensity.
+
+Where burden is declared together with self-censoring, the observed persistence is the quantity that `calibrate_delta(method = "postskip", burden = "fit")` matches.
+
+## How often do the tests reject? A small Monte Carlo
+
+The loop below repeats the silence test on new data sets under three mechanisms. It is deliberately small (the accompanying article uses 500 replications per cell and larger samples); the point is to show the pattern: size near the nominal level under M0 and M1, power under M2.
+
+```{r mc}
+rej <- function(motifs, reps = 60, ...) {
+  mean(vapply(seq_len(reps), function(r) {
+    s <- simulate_ema(N = 60, T = 40, motifs = motifs, compliance = 0.7, seed = 1000 + r, ...)
+    attr(silence_test(s$data, s$vars), "joint")["p"] < 0.05
+  }, logical(1)))
+}
+c(M0 = rej("M0"), M1 = rej("M1"), M2 = rej("M2", delta = -1))
+```
+
+With 60 replications the Monte Carlo standard error of a rejection rate near .05 is about .03, so the first two numbers are compatible with the nominal level; the third shows the power the test has at this sample size and tilt. In the simulation studies of Yu (2026) (500 replications per cell, *N* = 100, *T* = 56) the rejection rate under the recoverable motifs stayed within Monte Carlo error of the nominal level, with a mild excess at 85% compliance attributable to the small-sample behavior of cluster-robust inference.
+
+## What to do with a rejection
+
+A rejection says that the declared recoverable class is not tenable (or, under M1 + M3, that the collider is at work). It does not say which non-recoverable mechanism is present. The recommended continuation is
+
+1. check for burden with `fatigue_check()`; if it is substantial and M1 is plausible, prefer the sensor-gap test;
+2. if the sensor-gap test also rejects, or no sensor exists and burden is small, treat the skips as self-censoring and run the sensitivity analysis of `vignette("sensitivity-analysis")`, using the sign of the silence test as the sign of the tilt;
+3. record both tests in the `missingness_declaration()`.
+
+A non-rejection is weaker evidence: at typical sample sizes the tests have limited power against small tilts, and the identified sets of the sensitivity analysis remain the honest summary when self-censoring is substantively plausible.
+
+## References
+
+Cameron, A. C., & Miller, D. L. (2015). A practitioner's guide to cluster-robust inference. *Journal of Human Resources, 50*, 317-372. https://doi.org/10.3368/jhr.50.2.317
+
+Yu, H.-T. (2026). What skipped prompts hide: Detecting, diagnosing, and correcting informative nonresponse in ecological momentary assessment. Manuscript under review.

@@ -1,0 +1,111 @@
+url: https://hsiutingyu.github.io/silentema/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#2C3E50"
+    base_font: {google: "Source Sans 3"}
+    heading_font: {google: "Source Serif 4"}
+    code_font: {google: "Source Code Pro"}
+
+home:
+  title: "silentema: dynamic missingness graphs and sensitivity analysis for EMA data"
+  description: >
+    Declare the nonresponse mechanism of an experience-sampling study as a
+    dynamic missingness graph, check which estimands remain recoverable, test
+    whether skipped prompts were informative, and run a sensitivity analysis
+    for self-censoring.
+  sidebar:
+    structure: [links, license, citation, authors]
+    components:
+      citation:
+        title: Citation
+        text: >
+          Yu, H.-T. (2026). What skipped prompts hide: Detecting, diagnosing,
+          and correcting informative nonresponse in ecological momentary
+          assessment. Manuscript under review.
+
+authors:
+  Hsiu-Ting Yu:
+    href: https://hsiutingyu.github.io/index.html
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/silentema-workflow.html
+    articles:
+      text: Articles
+      menu:
+        - text: Dynamic missingness graphs and recoverability
+          href: articles/dm-graphs.html
+        - text: Was silence informative? The tests
+          href: articles/testing-informativeness.html
+        - text: Sensitivity analysis for self-censoring
+          href: articles/sensitivity-analysis.html
+        - text: Simulation and design planning
+          href: articles/simulation-and-design.html
+
+reference:
+  - title: Package overview
+    contents:
+      - silentema-package
+  - title: "1. Declare and check: dynamic missingness graphs"
+    desc: Build a dm-graph from the motif taxonomy, query it, and read the recoverability report.
+    contents:
+      - dm_graph
+      - plot.dm_graph
+      - dsep
+      - recoverability
+  - title: "2. Test: was silence informative?"
+    contents:
+      - silence_test
+      - sensor_gap_test
+      - fatigue_check
+  - title: "3. Estimate the two-level VAR(1)"
+    contents:
+      - make_pairs
+      - fit_pairs
+      - summary.pairs_fit
+      - fit_ipw
+      - fit_fiml
+      - loglik_fiml
+  - title: "4. Sensitivity analysis for self-censoring"
+    contents:
+      - fit_tilt
+      - tilt_profile
+      - plot.tilt_profile
+      - break_even
+      - bounds_support
+  - title: "5. Calibrate the sensitivity value"
+    contents:
+      - calibrate_delta
+      - plot.delta_calibration
+      - simulate_from_fit
+  - title: "6. Report"
+    contents:
+      - missingness_declaration
+  - title: Simulation and population parameters
+    contents:
+      - simulate_ema
+      - default_params
+      - stationary_cov
+      - partial_cors
+
+articles:
+  - title: Vignettes
+    navbar: ~
+    contents:
+      - silentema-workflow
+      - dm-graphs
+      - testing-informativeness
+      - sensitivity-analysis
+      - simulation-and-design
+
+news:
+  releases:
+    - text: "silentema 1.0.0"
+      href: news/index.html
