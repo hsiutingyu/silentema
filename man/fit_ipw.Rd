@@ -59,7 +59,8 @@ person's observed response rate as an offset-like covariate when
 \code{propensity = "person"}.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M5", seed = 1)   # the context is recorded in column C
+# the context is recorded in column C
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M5", seed = 1)
 f <- fit_ipw(sim$data, sim$vars, context = "C")
 f
 f$ess / f$n_pairs

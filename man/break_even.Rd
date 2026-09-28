@@ -31,7 +31,7 @@ at which the sign of the estimate changes or the confidence interval starts
 over \eqn{|\delta| \le \delta_{max}}.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
 be <- break_even(prof, delta_max = 1)
 be[be$coef == "NegA<-NegA", ]

@@ -63,11 +63,11 @@ self-censoring the gap identifies the direction of the tilt and, through
 \code{\link{calibrate_delta}}, its magnitude.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 1)
 sg <- sensor_gap_test(sim$data, sim$vars, sensor = "S")
 sg
 attr(sg, "loading")
 # under a recoverable mechanism the gap is null
-sim1 <- simulate_ema(N = 40, T = 30, motifs = "M1", sensor_cor = 0.6, seed = 1)
+sim1 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", sensor_cor = 0.6, seed = 1)
 sensor_gap_test(sim1$data, sim1$vars, sensor = "S")
 }

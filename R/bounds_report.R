@@ -17,7 +17,7 @@
 #' @references Manski, C. F. (2003). \emph{Partial identification of
 #'   probability distributions}. Springer. \doi{10.1007/b97478}
 #' @examples
-#' sim <- simulate_ema(N = 5, T = 20, motifs = "M2", seed = 1)
+#' sim <- simulate_ema(N = 5, n_prompts = 20, motifs = "M2", seed = 1)
 #' b <- bounds_support(sim$data, sim$vars, L = -3, U = 8)
 #' b[b$variable == "NegA", ]
 #' # the width is (1 - response rate) x (U - L)
@@ -71,7 +71,7 @@ bounds_support <- function(data, vars, L, U, id = "id", R = "R") {
 #'   written to that file.
 #' @examples
 #' g <- dm_graph(c("M2", "M4"), sensor = TRUE)
-#' sim <- simulate_ema(N = 40, T = 30, motifs = c("M2", "M4"), sensor_cor = 0.6, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = c("M2", "M4"), sensor_cor = 0.6, seed = 1)
 #' st <- silence_test(sim$data, sim$vars)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0), propensity = "person")
 #' cal <- calibrate_delta(prof, sim$data, method = "sensor")

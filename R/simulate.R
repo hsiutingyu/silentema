@@ -94,14 +94,15 @@ default_params <- function() {
 
 #' Simulate experience-sampling data with a declared missingness mechanism
 #'
-#' Generates a two-level VAR(1) process for \code{N} persons over \code{T}
+#' Generates a two-level VAR(1) process for \code{N} persons over \code{n_prompts}
 #' prompts and then deletes whole prompts according to one or more
 #' missingness motifs. Response probabilities use a probit link. Intercepts
 #' are calibrated numerically so that the realized response rate matches
 #' \code{compliance}.
 #'
 #' @param N Number of persons.
-#' @param T Number of prompts per person.
+#' @param n_prompts Number of prompts per person (called \code{T} in the
+#'   archived versions 0.2.x of the package).
 #' @param params List with \code{Phi}, \code{Psi}, \code{mu}, \code{Sigma_mu}
 #'   (see \code{\link{default_params}}).
 #' @param motifs Character vector of motif codes (see \code{\link{dm_graph}}).
@@ -121,7 +122,8 @@ default_params <- function() {
 #'   (M3); the term enters as \code{burden * trend}, where the trend runs from
 #'   -0.5 to 0.5 over the burn-in and the recorded prompts together, so a
 #'   negative value gives declining compliance over the study and the realized
-#'   change over the recorded prompts is about \code{burden * T / (T + burnin)}
+#'   change over the recorded prompts is about
+#'   \code{burden * n_prompts / (n_prompts + burnin)}
 #'   probit units.
 #' @param rho_propensity Correlation between the person-level response
 #'   propensity and the person's mean on the first variable (M4).
@@ -165,18 +167,18 @@ default_params <- function() {
 #'   \code{\link{simulate_from_fit}} to simulate from a fitted model,
 #'   \code{\link{default_params}}.
 #' @examples
-#' sim <- simulate_ema(N = 20, T = 15, motifs = c("M2", "M4"), compliance = 0.7, seed = 1)
+#' sim <- simulate_ema(N = 20, n_prompts = 15, motifs = c("M2", "M4"), compliance = 0.7, seed = 1)
 #' sim
 #' head(sim$data)
 #' # the deleted states are kept for checking estimators
 #' head(sim$full)
 #' # a sensor, probes, a persistent observed context and a day structure
-#' sim2 <- simulate_ema(N = 20, T = 20, motifs = c("M2", "M5"), sensor_cor = 0.6,
+#' sim2 <- simulate_ema(N = 20, n_prompts = 20, motifs = c("M2", "M5"), sensor_cor = 0.6,
 #'                      p_probe = 0.1, rho_context = 0.5, days = 5, seed = 2)
 #' names(sim2$data)
 #' mean(sim2$data$R[sim2$data$Z == 1])   # probes are always answered
 #' @export
-simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M0",
+simulate_ema <- function(N = 100, n_prompts = 56, params = default_params(), motifs = "M0",
                          compliance = 0.75, gamma = -0.5, delta = -1.0, kappa_R = 1.0,
                          burden = 0, rho_propensity = 0.4, sd_propensity = 0.5,
                          p_context = 0.3, rho_context = 0, gamma_C = 0.6, kappa_C = 1.0, rho_react = 0.2,
@@ -184,8 +186,8 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
   motifs <- toupper(motifs)
   bad <- setdiff(motifs, c("M0", "M1", "M2", "M3", "M4", "M5", "M6"))
   if (length(bad)) stop("Unknown motif code(s): ", paste(bad, collapse = ", "))
-  if (!is.numeric(N) || !is.numeric(T) || is.logical(N) || is.logical(T) || N < 1 || T < 3)
-    stop("'N' must be at least 1 and 'T' at least 3 (numeric)")
+  if (!is.numeric(N) || !is.numeric(n_prompts) || is.logical(N) || is.logical(n_prompts) || N < 1 || n_prompts < 3)
+    stop("'N' must be at least 1 and 'n_prompts' at least 3 (numeric)")
   if (compliance <= 0 || compliance > 1) stop("'compliance' must lie in (0, 1]")
   with_seed(seed, {
   Phi <- params$Phi; Psi <- params$Psi; mu <- params$mu; Sigma_mu <- params$Sigma_mu
@@ -193,7 +195,7 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
   expand <- function(v) { if (length(v) == 1L) { out <- rep(0, p); out[1] <- v; out } else v }
   gamma <- expand(gamma); delta <- expand(delta); gamma_C <- expand(gamma_C); rho_react <- expand(rho_react)
   Ltmu <- t(chol(Sigma_mu)); Lpsi <- t(chol(Psi))
-  Tt <- T + burnin
+  Tt <- n_prompts + burnin
   # person means
   mu_i <- t(mu + Ltmu %*% matrix(stats::rnorm(N * p), p, N))   # N x p
   # context
@@ -212,7 +214,6 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
     a_i <- sd_propensity * (rho_propensity * z1 + sqrt(1 - rho_propensity^2) * stats::rnorm(N))
   }
   # generate states and responses jointly (M6 needs R_{t-1})
-  X <- array(NA_real_, c(N, Tt, p)); Rm <- matrix(NA_integer_, N, Tt)
   Sinf <- stationary_cov(Phi, Psi); Ls <- t(chol(Sinf))
   x_prev <- mu_i + t(Ls %*% matrix(stats::rnorm(N * p), p, N))
   r_prev <- stats::rbinom(N, 1, compliance)
@@ -221,7 +222,8 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
   # first pass: generate the latent process; responses need intercept calibration,
   # which depends on the realized states. Because M6 feeds R back into X, we
   # calibrate the intercept on a pilot pass and then generate for real.
-  gen <- function(alpha0) {
+  gen <- function(alpha0) {   # returns the states and responses generated with response intercept alpha0
+    Xg <- array(NA_real_, c(N, Tt, p)); Rg <- matrix(NA_integer_, N, Tt)
     xp <- x_prev; rp <- r_prev
     for (tt in seq_len(Tt)) {
       e <- t(Lpsi %*% t(matrix(eps[, tt, ], N, p)))
@@ -236,18 +238,18 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
       u <- U[, tt]
       rt <- as.integer(u < stats::pnorm(lin))
       if (p_probe > 0) rt[Zm[, tt] == 1L] <- 1L
-      X[, tt, ] <<- xt; Rm[, tt] <<- rt
+      Xg[, tt, ] <- xt; Rg[, tt] <- rt
       xp <- xt; rp <- rt
     }
-    invisible(NULL)
+    list(X = Xg, Rm = Rg)
   }
   U <- matrix(stats::runif(N * Tt), N, Tt)
   Zm <- if (p_probe > 0) matrix(stats::rbinom(N * Tt, 1, p_probe), N, Tt) else NULL
   # calibrate alpha0 so that the realized response rate over the recorded prompts equals compliance
-  rate_at <- function(alpha0) { gen(alpha0); mean(Rm[, (burnin + 1):Tt]) - compliance }
+  rate_at <- function(alpha0) mean(gen(alpha0)$Rm[, (burnin + 1):Tt]) - compliance
   alpha0 <- tryCatch(stats::uniroot(rate_at, c(-30, 30), tol = 1e-4)$root,
                      error = function(e) stop("Could not calibrate the response intercept to the target compliance: ", conditionMessage(e)))
-  gen(alpha0)
+  g <- gen(alpha0); X <- g$X; Rm <- g$Rm
   keep <- (burnin + 1):Tt
   Xk <- X[, keep, , drop = FALSE]; Rk <- Rm[, keep, drop = FALSE]
   Ck <- if (!is.null(C)) C[, keep, drop = FALSE] else NULL
@@ -256,12 +258,12 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
   Sk <- NULL
   if (!is.null(sensor_cor)) {
     sdx <- sqrt(Sinf[1, 1])
-    Sk <- matrix(NA_real_, N, T)
-    for (tt in seq_len(T)) Sk[, tt] <- sensor_cor * (Xk[, tt, 1] - mu_i[, 1]) / sdx + sqrt(1 - sensor_cor^2) * stats::rnorm(N)
+    Sk <- matrix(NA_real_, N, n_prompts)
+    for (tt in seq_len(n_prompts)) Sk[, tt] <- sensor_cor * (Xk[, tt, 1] - mu_i[, 1]) / sdx + sqrt(1 - sensor_cor^2) * stats::rnorm(N)
   }
   # long data frame
-  id <- rep(seq_len(N), each = T); time <- rep(seq_len(T), times = N)
-  full <- matrix(NA_real_, N * T, p, dimnames = list(NULL, vn))
+  id <- rep(seq_len(N), each = n_prompts); time <- rep(seq_len(n_prompts), times = N)
+  full <- matrix(NA_real_, N * n_prompts, p, dimnames = list(NULL, vn))
   for (j in seq_len(p)) full[, j] <- as.vector(t(Xk[, , j]))
   Rv <- as.vector(t(Rk))
   obs <- full; obs[Rv == 0L, ] <- NA
@@ -274,7 +276,7 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
   if (!is.null(Zk)) d$Z <- as.vector(t(Zk))
   structure(list(data = d, full = cbind(id = id, time = time, as.data.frame(full)), mu_i = mu_i,
                  alpha0 = alpha0, a_i = a_i, params = params, motifs = motifs,
-                 settings = list(N = N, T = T, compliance = compliance, gamma = gamma, delta = delta,
+                 settings = list(N = N, n_prompts = n_prompts, compliance = compliance, gamma = gamma, delta = delta,
                                  kappa_R = kappa_R, burden = burden, rho_propensity = rho_propensity,
                                  sd_propensity = sd_propensity, p_context = p_context, rho_context = rho_context, gamma_C = gamma_C,
                                  kappa_C = kappa_C, rho_react = rho_react, sensor_cor = sensor_cor,
@@ -285,7 +287,7 @@ simulate_ema <- function(N = 100, T = 56, params = default_params(), motifs = "M
 
 #' @export
 print.ema_sim <- function(x, ...) {
-  cat("Simulated EMA data:", x$settings$N, "persons x", x$settings$T, "prompts,", length(x$vars), "variables\n")
+  cat("Simulated EMA data:", x$settings$N, "persons x", x$settings$n_prompts, "prompts,", length(x$vars), "variables\n")
   cat("  motifs:", paste(x$motifs, collapse = " + "), "  realized response rate:", round(mean(x$data$R), 3), "\n")
   invisible(x)
 }

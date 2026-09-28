@@ -107,7 +107,7 @@ persistence_contrast <- function(data, id = "id", time = "time", day = NULL, R =
 #' @seealso \code{\link{tilt_profile}}, \code{\link{sensor_gap_test}},
 #'   \code{\link{silence_test}}, \code{\link{simulate_from_fit}}
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6,
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6,
 #'                     p_probe = 0.05, seed = 3)
 #' vars <- sim$vars
 #' prof <- tilt_profile(sim$data, vars, delta_grid = c(-1.5, -1, -0.5, 0), probe = "Z")
@@ -170,26 +170,32 @@ calibrate_delta <- function(profile, data, method = c("sensor", "probe", "postsk
     persist_obs <- if (burden == "fit") persistence_contrast(data, id, time, day, R) else NA_real_
     if (burden == "fit" && is.na(persist_obs)) stop("burden = 'fit' needs both answered and skipped predecessors in the data")
     kg <- if (burden == "fit") sort(unique(c(0, kappa_grid))) else 0
-    sim_stats <- function(f, kappa, k) {   # mean post-skip coefficient and persistence over n_sim simulated data sets
-      vals <- rep(NA_real_, n_sim); pers <- rep(NA_real_, n_sim)
+    # mean post-skip coefficient and persistence over n_sim simulated data sets; the last simulation
+    # error, if any, is returned as the attribute "note"
+    sim_stats <- function(f, kappa, k) {
+      vals <- rep(NA_real_, n_sim); pers <- rep(NA_real_, n_sim); msg <- ""
       for (b in seq_len(n_sim)) {
-        sim <- tryCatch(simulate_from_fit(f, N = N, T = Tn, days = days, kappa_R = kappa,
+        sim <- tryCatch(simulate_from_fit(f, N = N, n_prompts = Tn, days = days, kappa_R = kappa,
                                           seed = if (is.null(seed)) NULL else seed + 100000L * k + 1000L * match(kappa, kg) + b),
-                        error = function(e) { note[k] <<- conditionMessage(e); NULL })
-        if (is.null(sim)) next
+                        error = function(e) e)
+        if (inherits(sim, "error")) { msg <- conditionMessage(sim); next }
         stb <- tryCatch(silence_test(sim, vars, "id", "time", if (is.null(days)) NULL else "day", "R", se = "cluster"),
                         error = function(e) NULL)
         if (!is.null(stb)) vals[b] <- stb$coef_R[wh]
         if (burden == "fit") pers[b] <- persistence_contrast(sim, "id", "time", if (is.null(days)) NULL else "day", "R")
       }
-      c(post = mean(vals, na.rm = TRUE), persist = mean(pers, na.rm = TRUE))
+      structure(c(post = mean(vals, na.rm = TRUE), persist = mean(pers, na.rm = TRUE)), note = msg)
     }
     for (k in seq_along(grid)) {
       f <- profile$fits[[k]]
       if (burden == "none") {
-        pred[k] <- sim_stats(f, 0, k)["post"]
+        ss <- sim_stats(f, 0, k)
+        if (nzchar(attr(ss, "note"))) note[k] <- attr(ss, "note")
+        pred[k] <- ss["post"]
       } else {
-        S <- t(sapply(kg, function(kap) sim_stats(f, kap, k)))     # rows: kappa grid; columns: post, persist
+        SL <- lapply(kg, function(kap) sim_stats(f, kap, k))
+        for (ss in SL) if (nzchar(attr(ss, "note"))) note[k] <- attr(ss, "note")
+        S <- t(sapply(SL, function(ss) c(post = ss[["post"]], persist = ss[["persist"]])))     # rows: kappa grid; columns: post, persist
         ok <- is.finite(S[, "persist"]) & is.finite(S[, "post"])
         if (sum(ok) < 2) next
         pk <- S[ok, "persist"]; po <- S[ok, "post"]; kk <- kg[ok]
@@ -285,7 +291,7 @@ print.delta_calibration <- function(x, digits = 3, ...) {
 #' @return Invisibly, the curve data frame (\code{x$curve} sorted by the
 #'   sensitivity value). Called for its side effect, the plot.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 3)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 3)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1.5, -1, -0.5, 0))
 #' cs <- calibrate_delta(prof, sim$data, method = "sensor")
 #' plot(cs, main = "Sensor calibration")
@@ -311,7 +317,9 @@ plot.delta_calibration <- function(x, ...) {
 #' burden term lowers the propensity after a skipped prompt.
 #' @param fit A \code{tilt_fit} (or a plain \code{pairs_fit}, which is treated
 #'   as a fit at \code{delta = 0}).
-#' @param N,T Persons and prompts.
+#' @param N Number of persons.
+#' @param n_prompts Number of prompts per person (called \code{T} in the
+#'   archived versions 0.2.x of the package).
 #' @param days Optional number of prompts per day; adds a \code{day} column and
 #'   restarts the burden term at the first prompt of each day.
 #' @param kappa_R Burden term: probit drop in the response propensity at a
@@ -321,16 +329,16 @@ plot.delta_calibration <- function(x, ...) {
 #'   \code{R} (1 = answered) and the state columns (\code{NA} at skipped
 #'   prompts), in the format accepted by every estimator of the package.
 #' @examples
-#' sim <- simulate_ema(N = 30, T = 20, motifs = "M2", seed = 1)
+#' sim <- simulate_ema(N = 30, n_prompts = 20, motifs = "M2", seed = 1)
 #' f <- fit_tilt(sim$data, sim$vars, delta = -1)
-#' d <- simulate_from_fit(f, N = 30, T = 20, seed = 2)
+#' d <- simulate_from_fit(f, N = 30, n_prompts = 20, seed = 2)
 #' mean(d$R)
 #' head(d)
 #' # with a day structure and a burden term
-#' d2 <- simulate_from_fit(f, N = 30, T = 20, days = 5, kappa_R = 1, seed = 2)
+#' d2 <- simulate_from_fit(f, N = 30, n_prompts = 20, days = 5, kappa_R = 1, seed = 2)
 #' fatigue_check(d2, day = "day")
 #' @export
-simulate_from_fit <- function(fit, N, T, days = NULL, kappa_R = 0, seed = NULL) {
+simulate_from_fit <- function(fit, N, n_prompts, days = NULL, kappa_R = 0, seed = NULL) {
   with_seed(seed, {
     vars <- fit$vars; p <- length(vars)
     Phi <- fit$Phi; Psi <- fit$Psi
@@ -344,19 +352,19 @@ simulate_from_fit <- function(fit, N, T, days = NULL, kappa_R = 0, seed = NULL) 
     if (anyNA(alpha)) alpha[is.na(alpha)] <- mean(alpha, na.rm = TRUE)
     Sinf <- stationary_cov(Phi, Psi); Ls <- t(chol(Sinf)); Lp <- t(chol(Psi))
     x <- mu_i + t(Ls %*% matrix(stats::rnorm(N * p), p, N))
-    out <- matrix(NA_real_, N * T, p); Rv <- integer(N * T)
+    out <- matrix(NA_real_, N * n_prompts, p); Rv <- integer(N * n_prompts)
     r_prev <- rep(1L, N)
-    for (tt in seq_len(T)) {
+    for (tt in seq_len(n_prompts)) {
       x <- mu_i + (x - mu_i) %*% t(Phi) + t(Lp %*% matrix(stats::rnorm(N * p), p, N))
       first_of_day <- !is.null(days) && ((tt - 1) %% days == 0)
       bt <- if (kappa_R != 0 && !first_of_day) -kappa_R * (1L - r_prev) else 0
       r <- as.integer(stats::runif(N) < stats::pnorm(alpha + as.vector(x %*% delta) + bt))
-      rows <- (seq_len(N) - 1) * T + tt
+      rows <- (seq_len(N) - 1) * n_prompts + tt
       out[rows, ] <- x; Rv[rows] <- r; r_prev <- r
     }
     out[Rv == 0L, ] <- NA
     colnames(out) <- vars
-    d <- data.frame(id = rep(seq_len(N), each = T), time = rep(seq_len(T), N))
+    d <- data.frame(id = rep(seq_len(N), each = n_prompts), time = rep(seq_len(n_prompts), N))
     if (!is.null(days)) d$day <- (d$time - 1) %/% days + 1
     d$R <- Rv
     cbind(d, as.data.frame(out))

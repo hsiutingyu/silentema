@@ -34,7 +34,7 @@ an inverse-probability weight with a stabilized numerator, and the within-person
 Eighty persons, forty prompts in eight days of five, 70% compliance, self-censoring on negative affect with `delta = -1` (the propensity to respond drops by one probit unit per unit of negative affect), a passive sensor correlated .6 with the within-person fluctuations of negative affect, and 10% randomized probes that force a response.
 
 ```{r sim}
-sim <- simulate_ema(N = 80, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+sim <- simulate_ema(N = 80, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1,
                     sensor_cor = 0.6, p_probe = 0.10, days = 5, seed = 21)
 sim
 truth <- default_params()$Phi
@@ -162,7 +162,7 @@ All three intervals contain the generating value of -1. The sensor calibration i
 When burden (M3) is declared with self-censoring, the post-skip contrast also carries the collider contribution of `R_t -> R_{t+1} <- X_{t+1}`, which works against the self-censoring signal; an M2-only curve then understates |delta|. `burden = "fit"` simulates from a model with a burden term whose size is calibrated, at every grid value, so that the simulated response persistence (the response rate after an answered minus after a skipped prompt, `fatigue_check()`) matches the observed one.
 
 ```{r burden}
-sim23 <- simulate_ema(N = 60, T = 40, motifs = c("M2", "M3"), compliance = 0.7, delta = -1,
+sim23 <- simulate_ema(N = 60, n_prompts = 40, motifs = c("M2", "M3"), compliance = 0.7, delta = -1,
                       kappa_R = 1, days = 5, seed = 12)
 prof23 <- tilt_profile(sim23$data, sim23$vars, delta_grid = c(-2, -1.5, -1, -0.5, 0), day = "day")
 c_none <- calibrate_delta(prof23, sim23$data, method = "postskip", day = "day",

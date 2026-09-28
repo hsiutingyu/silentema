@@ -64,11 +64,11 @@ check_time <- function(data, time) {
 #'   use; and \code{vars}, \code{n_prompts}, \code{response_rate} and
 #'   \code{Rv} (the response indicator in the row order of \code{data}).
 #' @examples
-#' sim <- simulate_ema(N = 10, T = 12, motifs = "M1", seed = 1)
+#' sim <- simulate_ema(N = 10, n_prompts = 12, motifs = "M1", seed = 1)
 #' pr <- make_pairs(sim$data, sim$vars)
 #' nrow(pr$y); pr$response_rate
 #' # pairs are formed within days only when a day column is given
-#' simd <- simulate_ema(N = 10, T = 12, days = 4, seed = 1)
+#' simd <- simulate_ema(N = 10, n_prompts = 12, days = 4, seed = 1)
 #' nrow(make_pairs(simd$data, simd$vars)$y)
 #' nrow(make_pairs(simd$data, simd$vars, day = "day")$y)
 #' @export
@@ -182,7 +182,7 @@ within_fit <- function(y, x, g, w, levels_g) {
 #'   Nickell, S. (1981). Biases in dynamic models with fixed effects.
 #'   \emph{Econometrica, 49}, 1417-1426. \doi{10.2307/1911408}
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M1", seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", seed = 1)
 #' f <- fit_pairs(sim$data, sim$vars)
 #' f
 #' summary(f)
@@ -190,7 +190,7 @@ within_fit <- function(y, x, g, w, levels_g) {
 #' # compare with the population values used by the simulator
 #' round(f$Phi - default_params()$Phi, 2)
 #' # covariate adjustment for an observed context (motif M5)
-#' sim5 <- simulate_ema(N = 40, T = 30, motifs = "M5", seed = 2)
+#' sim5 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M5", seed = 2)
 #' f5 <- fit_pairs(sim5$data, sim5$vars, covariates = "C")
 #' f5$B_cov
 #' @export
@@ -315,7 +315,7 @@ print.pairs_fit <- function(x, digits = 3, ...) {
 #'   to cluster-robust inference. \emph{Journal of Human Resources, 50},
 #'   317-372. \doi{10.3368/jhr.50.2.317}
 #' @examples
-#' sim <- simulate_ema(N = 30, T = 20, seed = 2)
+#' sim <- simulate_ema(N = 30, n_prompts = 20, seed = 2)
 #' f <- fit_pairs(sim$data, sim$vars)
 #' summary(f)
 #' coef(f)

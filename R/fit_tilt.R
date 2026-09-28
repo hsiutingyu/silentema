@@ -41,7 +41,7 @@
 #' @seealso \code{\link{tilt_profile}} fits a grid of sensitivity values;
 #'   \code{\link{calibrate_delta}} chooses one from a design feature.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 #' f0 <- fit_pairs(sim$data, sim$vars)      # treats skips as ignorable
 #' f <- fit_tilt(sim$data, sim$vars, delta = -1)
 #' f
@@ -173,7 +173,7 @@ fit_tilt <- function(data, vars, delta, id = "id", time = "time", day = NULL, R 
 #' @seealso \code{\link{break_even}}, \code{\link{calibrate_delta}},
 #'   \code{\link{plot.tilt_profile}}
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1.5, -1, -0.5, 0, 0.5))
 #' prof
 #' head(prof$Phi)
@@ -251,7 +251,7 @@ print.tilt_profile <- function(x, digits = 3, ...) {
 #'   same interval). A significance change is a dichotomous criterion; the sign
 #'   change and the band are the primary quantities.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
 #' be <- break_even(prof, delta_max = 1)
 #' be[be$coef == "NegA<-NegA", ]
@@ -293,7 +293,7 @@ break_even <- function(profile, delta_max = max(abs(profile$delta_grid))) {
 #'   rows of \code{x$Phi} for the selected coefficients). Called for its side
 #'   effect, the plot.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 #' prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
 #' # 'calibrated' marks a value such as the one returned by calibrate_delta()
 #' plot(prof, plausible = c(-1, 0), calibrated = -0.6)

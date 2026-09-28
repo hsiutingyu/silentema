@@ -80,14 +80,14 @@ negative value means that the states hidden by skips were higher than the
 states that were reported.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 st <- silence_test(sim$data, sim$vars)
 st
 attr(st, "joint")
-sim0 <- simulate_ema(N = 40, T = 30, motifs = "M1", seed = 1)
+sim0 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", seed = 1)
 silence_test(sim0$data, sim0$vars)
 # quadratic terms in the lagged states, and a day structure
-simd <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, days = 5, seed = 1)
+simd <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, days = 5, seed = 1)
 silence_test(simd$data, simd$vars, day = "day", poly = 2)
 }
 \references{

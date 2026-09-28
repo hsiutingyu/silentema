@@ -49,7 +49,7 @@ is the alternative, and \code{\link{silence_test}} implements it for the
 test.
 }
 \examples{
-sim <- simulate_ema(N = 30, T = 20, seed = 2)
+sim <- simulate_ema(N = 30, n_prompts = 20, seed = 2)
 f <- fit_pairs(sim$data, sim$vars)
 summary(f)
 coef(f)

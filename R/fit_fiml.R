@@ -27,15 +27,15 @@
 #'   \code{Psi}, \code{pcor}, \code{mu}, \code{Sigma_mu}, \code{Sigma0}
 #'   (the stationary covariance of the within-person deviations), \code{loglik}
 #'   (the trace of log-likelihood values over the EM iterations),
-#'   \code{iterations}, \code{converged}, \code{N}, \code{T} and
-#'   \code{vars}. It has a \code{print} method.
+#'   \code{iterations}, \code{converged}, \code{N}, \code{n_prompts} (the
+#'   number of prompts spanned by the prompt index) and \code{vars}. It has a \code{print} method.
 #' @examples
-#' sim <- simulate_ema(N = 30, T = 20, motifs = "M1", seed = 1)
+#' sim <- simulate_ema(N = 30, n_prompts = 20, motifs = "M1", seed = 1)
 #' f <- fit_fiml(sim$data, sim$vars)
 #' f
 #' f$converged; length(f$loglik)
 #' # under self-censoring the MAR likelihood is biased like the answered-pairs estimator
-#' sim2 <- simulate_ema(N = 30, T = 20, motifs = "M2", delta = -1, seed = 1)
+#' sim2 <- simulate_ema(N = 30, n_prompts = 20, motifs = "M2", delta = -1, seed = 1)
 #' c(fiml = fit_fiml(sim2$data, sim2$vars)$Phi[1, 1],
 #'   pairs = fit_pairs(sim2$data, sim2$vars)$Phi[1, 1],
 #'   truth = default_params()$Phi[1, 1])
@@ -86,13 +86,13 @@ fit_fiml <- function(data, vars, id = "id", time = "time", R = "R", start = NULL
   dimnames(Phi) <- dimnames(Psi) <- dimnames(res$Sigma_mu) <- list(vars, vars)
   structure(list(Phi = Phi, Psi = Psi, pcor = partial_cors(Psi), mu = stats::setNames(as.vector(res$mu), vars),
                  Sigma_mu = res$Sigma_mu, Sigma0 = res$Sigma0, loglik = res$loglik,
-                 iterations = res$iterations, converged = res$converged, N = N, T = Tn, vars = vars),
+                 iterations = res$iterations, converged = res$converged, N = N, n_prompts = Tn, vars = vars),
             class = "fiml_fit")
 }
 
 #' @export
 print.fiml_fit <- function(x, digits = 3, ...) {
-  cat("FIML (MAR) two-level VAR(1) by state-space EM:", x$N, "persons,", x$T, "prompts;",
+  cat("FIML (MAR) two-level VAR(1) by state-space EM:", x$N, "persons,", x$n_prompts, "prompts;",
       x$iterations, "iterations,", if (x$converged) "converged" else "NOT converged", "\n")
   cat("Lagged coefficients Phi:\n"); print(round(x$Phi, digits))
   cat("Contemporaneous partial correlations:\n"); print(round(x$pcor, digits))
@@ -118,7 +118,7 @@ print.fiml_fit <- function(x, digits = 3, ...) {
 #'   the two-level VAR(1) with the given parameters, skipped prompts treated as
 #'   missing at random.
 #' @examples
-#' sim <- simulate_ema(N = 20, T = 15, seed = 1)
+#' sim <- simulate_ema(N = 20, n_prompts = 15, seed = 1)
 #' f <- fit_fiml(sim$data, sim$vars)
 #' loglik_fiml(sim$data, sim$vars, f$Phi, f$Psi, f$mu, f$Sigma_mu)
 #' # the likelihood at the population parameters is lower than at the ML estimates

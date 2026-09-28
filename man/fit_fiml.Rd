@@ -39,8 +39,8 @@ An object of class \code{"fiml_fit"}: a list with \code{Phi},
   \code{Psi}, \code{pcor}, \code{mu}, \code{Sigma_mu}, \code{Sigma0}
   (the stationary covariance of the within-person deviations), \code{loglik}
   (the trace of log-likelihood values over the EM iterations),
-  \code{iterations}, \code{converged}, \code{N}, \code{T} and
-  \code{vars}. It has a \code{print} method.
+  \code{iterations}, \code{converged}, \code{N}, \code{n_prompts} (the
+  number of prompts spanned by the prompt index) and \code{vars}. It has a \code{print} method.
 }
 \description{
 Fits the two-level VAR(1) with random person means by maximum likelihood,
@@ -64,12 +64,12 @@ The prompts of a person are treated as one equally spaced series
   estimates.
 }
 \examples{
-sim <- simulate_ema(N = 30, T = 20, motifs = "M1", seed = 1)
+sim <- simulate_ema(N = 30, n_prompts = 20, motifs = "M1", seed = 1)
 f <- fit_fiml(sim$data, sim$vars)
 f
 f$converged; length(f$loglik)
 # under self-censoring the MAR likelihood is biased like the answered-pairs estimator
-sim2 <- simulate_ema(N = 30, T = 20, motifs = "M2", delta = -1, seed = 1)
+sim2 <- simulate_ema(N = 30, n_prompts = 20, motifs = "M2", delta = -1, seed = 1)
 c(fiml = fit_fiml(sim2$data, sim2$vars)$Phi[1, 1],
   pairs = fit_pairs(sim2$data, sim2$vars)$Phi[1, 1],
   truth = default_params()$Phi[1, 1])

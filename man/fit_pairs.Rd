@@ -97,7 +97,7 @@ Person intercepts are handled by weighted within-person demeaning
   \code{n_dropped}.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M1", seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", seed = 1)
 f <- fit_pairs(sim$data, sim$vars)
 f
 summary(f)
@@ -105,7 +105,7 @@ coef(f)[1:4]; confint(f)[1:2, ]
 # compare with the population values used by the simulator
 round(f$Phi - default_params()$Phi, 2)
 # covariate adjustment for an observed context (motif M5)
-sim5 <- simulate_ema(N = 40, T = 30, motifs = "M5", seed = 2)
+sim5 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M5", seed = 2)
 f5 <- fit_pairs(sim5$data, sim5$vars, covariates = "C")
 f5$B_cov
 }

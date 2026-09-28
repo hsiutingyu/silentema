@@ -37,7 +37,7 @@ $$P(R_{it} = 1) = \Phi_N(\alpha_0 + a_i + \text{motif terms}),$$
 and the intercept alpha~0~ is calibrated numerically so that the realized response rate over the recorded prompts equals `compliance`. This calibration is what makes cells with different mechanisms comparable at the same response rate.
 
 ```{r basic}
-sim <- simulate_ema(N = 50, T = 30, motifs = "M0", compliance = 0.75, seed = 1)
+sim <- simulate_ema(N = 50, n_prompts = 30, motifs = "M0", compliance = 0.75, seed = 1)
 sim
 head(sim$data)
 ```
@@ -66,7 +66,7 @@ Both `gamma` and `delta` act on the raw (uncentered) state, so a self-censoring 
 
 ```{r motifs}
 rate_after <- function(motifs, ...) {
-  s <- simulate_ema(N = 50, T = 30, motifs = motifs, compliance = 0.7, seed = 2, ...)
+  s <- simulate_ema(N = 50, n_prompts = 30, motifs = motifs, compliance = 0.7, seed = 2, ...)
   fc <- fatigue_check(s$data)
   c(response_rate = round(mean(s$data$R), 3), persistence = round(fc$difference, 3))
 }
@@ -87,7 +87,7 @@ Three optional channels correspond to the calibration designs of `calibrate_delt
 `days` adds a `day` column, which the estimators use to form pairs within days only when it is passed to them as `day = "day"`.
 
 ```{r channels}
-sim2 <- simulate_ema(N = 30, T = 20, motifs = c("M2", "M5"), delta = -1, sensor_cor = 0.6,
+sim2 <- simulate_ema(N = 30, n_prompts = 20, motifs = c("M2", "M5"), delta = -1, sensor_cor = 0.6,
                      p_probe = 0.1, rho_context = 0.5, days = 5, seed = 3)
 names(sim2$data)
 c(probe_share = mean(sim2$data$Z), answered_at_probes = mean(sim2$data$R[sim2$data$Z == 1]),
@@ -100,7 +100,7 @@ c(probe_share = mean(sim2$data$Z), answered_at_probes = mean(sim2$data$R[sim2$da
 
 ```{r seed}
 set.seed(100); a <- runif(1)
-set.seed(100); invisible(simulate_ema(N = 5, T = 5, seed = 7)); b <- runif(1)
+set.seed(100); invisible(simulate_ema(N = 5, n_prompts = 5, seed = 7)); b <- runif(1)
 identical(a, b)
 ```
 
@@ -111,9 +111,9 @@ The same convention holds for `simulate_from_fit()`, `silence_test(se = "daybloc
 `simulate_from_fit()` generates data from a fitted tilt model: the fitted VAR(1), the fitted person means and, with `propensity = "person"`, the fitted response intercepts, resampled jointly so that the association between a person's level and propensity is preserved, and the probit self-censoring model at the fit's sensitivity value. It is the engine of the post-skip calibration and a convenient parametric bootstrap.
 
 ```{r fromfit}
-sim3 <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 4)
+sim3 <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 4)
 ft <- fit_tilt(sim3$data, sim3$vars, delta = -1)
-d <- simulate_from_fit(ft, N = 60, T = 40, seed = 5)
+d <- simulate_from_fit(ft, N = 60, n_prompts = 40, seed = 5)
 c(response_rate = mean(d$R), persons = length(unique(d$id)))
 # the simulated data carry the self-censoring signature of the fitted model
 silence_test(d, sim3$vars)$coef_R[1]
@@ -130,7 +130,7 @@ The simulator makes design questions concrete. Each study below is deliberately 
 ```{r bias}
 bias <- function(delta, reps = 20) {
   est <- vapply(seq_len(reps), function(r) {
-    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = delta, seed = 100 + r)
+    s <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = delta, seed = 100 + r)
     f <- fit_pairs(s$data, s$vars)
     c(f$Phi[1, 1], f$mu[1])
   }, numeric(2))
@@ -148,7 +148,7 @@ The precision of the sensor calibration depends on how strongly the sensor loads
 ```{r sensor-design}
 width <- function(sensor_cor, reps = 3) {
   w <- vapply(seq_len(reps), function(r) {
-    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+    s <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1,
                       sensor_cor = sensor_cor, seed = 200 + r)
     pr <- tilt_profile(s$data, s$vars, delta_grid = c(-2, -1.5, -1, -0.5, 0))
     cs <- calibrate_delta(pr, s$data, method = "sensor")
@@ -166,7 +166,7 @@ A sensor with a modest loading gives wide or open intervals; a loading around .6
 ```{r probe-design}
 probe_se <- function(p_probe, reps = 3) {
   se <- vapply(seq_len(reps), function(r) {
-    s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+    s <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1,
                       p_probe = p_probe, seed = 300 + r)
     pr <- tilt_profile(s$data, s$vars, delta_grid = c(-2, -1.5, -1, -0.5, 0), probe = "Z")
     calibrate_delta(pr, s$data, method = "probe")$se
@@ -184,7 +184,7 @@ The last study reproduces, in miniature, the logic of the damage assessment in Y
 
 ```{r estimators}
 compare <- function(motifs, ...) {
-  s <- simulate_ema(N = 80, T = 40, motifs = motifs, compliance = 0.7, seed = 6, ...)
+  s <- simulate_ema(N = 80, n_prompts = 40, motifs = motifs, compliance = 0.7, seed = 6, ...)
   c(pairs = fit_pairs(s$data, s$vars)$Phi[1, 1], fiml = fit_fiml(s$data, s$vars)$Phi[1, 1])
 }
 round(rbind(M1 = compare("M1"), M4 = compare("M4"), M2 = compare("M2", delta = -1),

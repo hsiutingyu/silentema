@@ -86,7 +86,7 @@ fixed point; the population parameters are a fixed point when
 \eqn{\delta} is the true selection vector.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 f0 <- fit_pairs(sim$data, sim$vars)      # treats skips as ignorable
 f <- fit_tilt(sim$data, sim$vars, delta = -1)
 f

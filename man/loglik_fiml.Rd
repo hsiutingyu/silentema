@@ -48,7 +48,7 @@ as missing at random. Useful for comparing fits, for profile likelihoods,
 and for checking a fit against the trace of the EM iterations.
 }
 \examples{
-sim <- simulate_ema(N = 20, T = 15, seed = 1)
+sim <- simulate_ema(N = 20, n_prompts = 15, seed = 1)
 f <- fit_fiml(sim$data, sim$vars)
 loglik_fiml(sim$data, sim$vars, f$Phi, f$Psi, f$mu, f$Sigma_mu)
 # the likelihood at the population parameters is lower than at the ML estimates

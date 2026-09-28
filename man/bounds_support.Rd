@@ -34,7 +34,7 @@ shrink with autocorrelation, in contrast to the tilt-bounded identified
 sets of \code{\link{break_even}}.
 }
 \examples{
-sim <- simulate_ema(N = 5, T = 20, motifs = "M2", seed = 1)
+sim <- simulate_ema(N = 5, n_prompts = 20, motifs = "M2", seed = 1)
 b <- bounds_support(sim$data, sim$vars, L = -3, U = 8)
 b[b$variable == "NegA", ]
 # the width is (1 - response rate) x (U - L)

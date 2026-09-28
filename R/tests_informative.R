@@ -99,14 +99,14 @@ block_boot_coef <- function(Y, X, g, block, B = 500, seed = NULL) {
 #'   \code{\link{recoverability}} (which reports whether the null is expected
 #'   under a declared graph)
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 #' st <- silence_test(sim$data, sim$vars)
 #' st
 #' attr(st, "joint")
-#' sim0 <- simulate_ema(N = 40, T = 30, motifs = "M1", seed = 1)
+#' sim0 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", seed = 1)
 #' silence_test(sim0$data, sim0$vars)
 #' # quadratic terms in the lagged states, and a day structure
-#' simd <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, days = 5, seed = 1)
+#' simd <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, days = 5, seed = 1)
 #' silence_test(simd$data, simd$vars, day = "day", poly = 2)
 #' @export
 silence_test <- function(data, vars, id = "id", time = "time", day = NULL, R = "R",
@@ -206,12 +206,12 @@ print.silence_test <- function(x, digits = 3, ...) {
 #'   number of prompts used) and \code{se} (the method used). It has a
 #'   \code{print} method.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 1)
 #' sg <- sensor_gap_test(sim$data, sim$vars, sensor = "S")
 #' sg
 #' attr(sg, "loading")
 #' # under a recoverable mechanism the gap is null
-#' sim1 <- simulate_ema(N = 40, T = 30, motifs = "M1", sensor_cor = 0.6, seed = 1)
+#' sim1 <- simulate_ema(N = 40, n_prompts = 30, motifs = "M1", sensor_cor = 0.6, seed = 1)
 #' sensor_gap_test(sim1$data, sim1$vars, sensor = "S")
 #' @export
 sensor_gap_test <- function(data, vars, sensor = "S", id = "id", time = "time", day = NULL, R = "R",
@@ -271,10 +271,10 @@ print.sensor_gap_test <- function(x, digits = 3, ...) {
 #'   person-specific differences), \code{by_quarter} (response rate by study
 #'   quarter) and \code{n_transitions}. It has a \code{print} method.
 #' @examples
-#' sim <- simulate_ema(N = 40, T = 30, motifs = "M3", seed = 1)
+#' sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M3", seed = 1)
 #' fatigue_check(sim$data)
 #' # compare with a mechanism without burden
-#' fatigue_check(simulate_ema(N = 40, T = 30, motifs = "M0", seed = 1)$data)
+#' fatigue_check(simulate_ema(N = 40, n_prompts = 30, motifs = "M0", seed = 1)$data)
 #' @export
 fatigue_check <- function(data, id = "id", time = "time", day = NULL, R = "R") {
   check_columns(data, c(id, time, day, R))

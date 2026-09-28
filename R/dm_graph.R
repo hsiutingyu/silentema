@@ -62,37 +62,36 @@ dm_graph <- function(motifs = "M0", context = c("none", "latent", "observed"),
   if (window < 4L) stop("window must be at least 4")
   W <- as.integer(window)
   Xn <- paste0("X", seq_len(W)); Rn <- paste0("R", seq_len(W))
-  edges <- list()
-  add <- function(from, to) edges[[length(edges) + 1L]] <<- c(from, to)
+  edges <- list()   # one c(from, to) pair per edge
   # structural edges
-  for (t in seq_len(W)) add("eta", Xn[t])
-  for (t in 2:W) add(Xn[t - 1], Xn[t])
+  for (t in seq_len(W)) edges[[length(edges) + 1L]] <- c("eta", Xn[t])
+  for (t in 2:W) edges[[length(edges) + 1L]] <- c(Xn[t - 1], Xn[t])
   nodes <- c("eta", Xn, Rn)
   latent <- "eta"
   observed_always <- Rn
   # M4: zeta associated with eta through a common latent U
   if ("M4" %in% motifs) {
     nodes <- c(nodes, "U", "zeta"); latent <- c(latent, "U", "zeta")
-    add("U", "eta"); add("U", "zeta")
-    for (t in seq_len(W)) add("zeta", Rn[t])
+    edges[[length(edges) + 1L]] <- c("U", "eta"); edges[[length(edges) + 1L]] <- c("U", "zeta")
+    for (t in seq_len(W)) edges[[length(edges) + 1L]] <- c("zeta", Rn[t])
   }
-  if ("M1" %in% motifs) for (t in 2:W) add(Xn[t - 1], Rn[t])
-  if ("M2" %in% motifs) for (t in seq_len(W)) add(Xn[t], Rn[t])
-  if ("M3" %in% motifs) for (t in 2:W) add(Rn[t - 1], Rn[t])
-  if ("M6" %in% motifs) for (t in 2:W) add(Rn[t - 1], Xn[t])
+  if ("M1" %in% motifs) for (t in 2:W) edges[[length(edges) + 1L]] <- c(Xn[t - 1], Rn[t])
+  if ("M2" %in% motifs) for (t in seq_len(W)) edges[[length(edges) + 1L]] <- c(Xn[t], Rn[t])
+  if ("M3" %in% motifs) for (t in 2:W) edges[[length(edges) + 1L]] <- c(Rn[t - 1], Rn[t])
+  if ("M6" %in% motifs) for (t in 2:W) edges[[length(edges) + 1L]] <- c(Rn[t - 1], Xn[t])
   if (context != "none") {
     Cn <- paste0("C", seq_len(W)); nodes <- c(nodes, Cn)
     if (context == "latent") latent <- c(latent, Cn) else observed_always <- c(observed_always, Cn)
-    for (t in seq_len(W)) { add(Cn[t], Xn[t]); add(Cn[t], Rn[t]) }
-    if (context_persistent) for (t in 2:W) add(Cn[t - 1], Cn[t])
+    for (t in seq_len(W)) { edges[[length(edges) + 1L]] <- c(Cn[t], Xn[t]); edges[[length(edges) + 1L]] <- c(Cn[t], Rn[t]) }
+    if (context_persistent) for (t in 2:W) edges[[length(edges) + 1L]] <- c(Cn[t - 1], Cn[t])
   }
   if (sensor) {
     Sn <- paste0("S", seq_len(W)); nodes <- c(nodes, Sn); observed_always <- c(observed_always, Sn)
-    for (t in seq_len(W)) add(Xn[t], Sn[t])
+    for (t in seq_len(W)) edges[[length(edges) + 1L]] <- c(Xn[t], Sn[t])
   }
   if (probe) {
     Zn <- paste0("Z", seq_len(W)); nodes <- c(nodes, Zn); observed_always <- c(observed_always, Zn)
-    for (t in seq_len(W)) add(Zn[t], Rn[t])
+    for (t in seq_len(W)) edges[[length(edges) + 1L]] <- c(Zn[t], Rn[t])
   }
   em <- do.call(rbind, edges)
   colnames(em) <- c("from", "to")
@@ -234,7 +233,7 @@ recoverability <- function(g, t = 3L) {
   pl <- intersect(c("eta", "zeta"), g$nodes)         # person-level latents
   Cobs <- if (g$context == "observed") paste0("C", t) else character(0)
   rows <- list()
-  push <- function(estimand, ok, estimator, cond) rows[[length(rows) + 1L]] <<-
+  row_df <- function(estimand, ok, estimator, cond)   # one row of the report
     data.frame(estimand = estimand, recoverable = ok, estimator = estimator, condition = cond,
                stringsAsFactors = FALSE)
   # --- transition kernel (Phi, Psi) from complete adjacent pairs
@@ -246,53 +245,53 @@ recoverability <- function(g, t = 3L) {
   if (reactive) kern_ok <- dsep(g, R(t), X(t), c(za, R(t - 1)))   # assessment-conditioned kernel p(X_t | X_{t-1}, eta, R_{t-1} = 1)
   if (kern_ok && !reactive) {
     est <- if (length(Cobs)) "complete pairs, context-conditional kernel (covariate adjustment); context-marginal kernel by stabilized IPW on C" else "complete adjacent pairs, within-person (person intercepts)"
-    push("transition kernel (Phi, Psi, contemporaneous network)", TRUE, est,
+    rows[[length(rows) + 1L]] <- row_df("transition kernel (Phi, Psi, contemporaneous network)", TRUE, est,
          sprintf("R_t _||_ X_t | {%s} and R_{t-1} _||_ X_t | {%s, R_t}", paste(za, collapse = ","), paste(za, collapse = ",")))
   } else if (reactive && kern_ok) {
-    push("transition kernel (Phi, Psi, contemporaneous network)", TRUE,
+    rows[[length(rows) + 1L]] <- row_df("transition kernel (Phi, Psi, contemporaneous network)", TRUE,
          "complete adjacent pairs recover the assessment-conditioned kernel p(X_t | X_{t-1}, eta, R_{t-1} = 1): Phi and Psi are unaffected when reactivity shifts the level (additive), but the person intercept absorbs the shift",
          "reactivity edge R_{t-1} -> X_t declared; all complete pairs have R_{t-1} = 1")
   } else if (reactive) {
-    push("transition kernel (Phi, Psi, contemporaneous network)", FALSE,
+    rows[[length(rows) + 1L]] <- row_df("transition kernel (Phi, Psi, contemporaneous network)", FALSE,
          "reactivity combined with a motif that makes R_t depend on X_t: sensitivity analysis required",
          "reactivity edge R_{t-1} -> X_t declared and R_t, X_t d-connected")
   } else {
     why <- if (!a) sprintf("R_t and X_t are d-connected given {%s}", paste(za, collapse = ",")) else
       sprintf("R_{t-1} and X_t are d-connected given {%s, R_t}", paste(za, collapse = ","))
-    push("transition kernel (Phi, Psi, contemporaneous network)", FALSE,
+    rows[[length(rows) + 1L]] <- row_df("transition kernel (Phi, Psi, contemporaneous network)", FALSE,
          "sensitivity analysis (tilt profile) or a calibration design is required", why)
   }
   # --- probe rule
   if (g$probe) {
     zp <- c(X(t - 1), pl, Cobs)
     okp <- dsep(g, paste0("Z", t), X(t), zp)
-    push("transition kernel from probe prompts", okp,
+    rows[[length(rows) + 1L]] <- row_df("transition kernel from probe prompts", okp,
          if (okp) "complete pairs restricted to probe prompts (Z_t = 1); delta calibrated by the probe contrast" else "probe not independent of X_t",
          sprintf("Z_t _||_ X_t | {%s}; R_t = 1 whenever Z_t = 1", paste(zp, collapse = ",")))
   }
   # --- person mean
   om <- dsep(g, R(t), X(t), c(pl, Cobs))
-  push("person mean via observed within-person mean", om,
+  rows[[length(rows) + 1L]] <- row_df("person mean via observed within-person mean", om,
        if (om) "mean of answered prompts, per person" else "biased",
        sprintf("R_t _||_ X_t | {%s}", paste(c(pl, Cobs), collapse = ",")))
-  push("person mean via recovered dynamics", kern_ok && !reactive,
+  rows[[length(rows) + 1L]] <- row_df("person mean via recovered dynamics", kern_ok && !reactive,
        if (kern_ok && !reactive) "mu_i = (I - Phi)^{-1} c_i from the recovered kernel" else
          if (reactive) "biased: the answered-pair intercept is the intercept of the assessed process (it absorbs the reactivity shift)" else "not available",
        if (reactive) "transition kernel recoverable and no reactivity" else "transition kernel recoverable")
   # --- between-person law
   any_mean <- om || (kern_ok && !reactive)
-  push("between-person law (mu, Sigma_mu), person-weighted", any_mean,
+  rows[[length(rows) + 1L]] <- row_df("between-person law (mu, Sigma_mu), person-weighted", any_mean,
        if (any_mean) paste0("one recovered mean per person (", if (om) "observed means" else "dynamics-recovered means", "), persons weighted equally; positivity assumed") else "not recoverable",
        "a person-mean estimator is available and P(R_t = 1 | eta) > 0")
   pw <- dsep(g, R(t), X(t), Cobs)
-  push("between-person law, prompt-weighted (pooling answered prompts)", pw,
+  rows[[length(rows) + 1L]] <- row_df("between-person law, prompt-weighted (pooling answered prompts)", pw,
        if (pw) "pooled answered prompts" else "biased: response rate depends on the person's states",
        sprintf("R_t _||_ X_t | {%s}", if (length(Cobs)) paste(Cobs, collapse = ",") else "empty set"))
   # --- silence test validity (null holds under recoverable class)
   zs <- c(X(t - 1), pl, Cobs, R(t - 1), R(t + 1))
   st <- dsep(g, R(t), X(t + 1), zs)
   burden <- any(g$edges[, "from"] == R(t) & g$edges[, "to"] == R(t + 1))
-  push("silence test (coefficient of R_t in X_{t+1} ~ X_{t-1} + R_t, within person)",
+  rows[[length(rows) + 1L]] <- row_df("silence test (coefficient of R_t in X_{t+1} ~ X_{t-1} + R_t, within person)",
        NA, if (st) "null expected (test valid as a test of the recoverable class)" else
          if (kern_ok && !reactive) "null violated although the kernel is recoverable (collider at R_{t+1}); use the sensor-gap test or check for fatigue first" else
            if (burden) "non-null expected, but the burden collider at R_{t+1} works against the state-dependent signal: low power; prefer the sensor-gap test" else
@@ -302,7 +301,7 @@ recoverability <- function(g, t = 3L) {
   if (g$sensor) {
     zg <- c(X(t - 1), pl, Cobs, R(t - 1))
     sg <- dsep(g, R(t), paste0("S", t), zg)
-    push("sensor-gap test (coefficient of R_t in S_t ~ X_{t-1} + R_t, within person)", NA,
+    rows[[length(rows) + 1L]] <- row_df("sensor-gap test (coefficient of R_t in S_t ~ X_{t-1} + R_t, within person)", NA,
          if (sg) "null expected (test valid as a test of the recoverable class)" else
            if (kern_ok && !reactive) "null violated although the kernel is recoverable" else
              "non-null expected: delta can be calibrated from the sensor gap",

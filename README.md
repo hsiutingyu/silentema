@@ -41,7 +41,7 @@ The package contains C++ code (the state-space EM algorithm), so a compiler tool
 
 ```r
 library(silentema)
-sim <- simulate_ema(N = 100, T = 56, motifs = "M2", compliance = 0.7, delta = -1,
+sim <- simulate_ema(N = 100, n_prompts = 56, motifs = "M2", compliance = 0.7, delta = -1,
                     sensor_cor = 0.6, seed = 1)
 g <- dm_graph("M2", sensor = TRUE)
 recoverability(g)                       # what can be recovered under the declared mechanism?

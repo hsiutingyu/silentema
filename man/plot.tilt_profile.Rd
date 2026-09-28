@@ -29,7 +29,7 @@ bands) against the sensitivity value, marks the plausible interval when
 supplied, and marks a calibrated value when supplied.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, seed = 1)
 prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0, 0.5))
 # 'calibrated' marks a value such as the one returned by calibrate_delta()
 plot(prof, plausible = c(-1, 0), calibrated = -0.6)

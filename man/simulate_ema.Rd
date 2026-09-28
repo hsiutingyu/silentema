@@ -6,7 +6,7 @@
 \usage{
 simulate_ema(
   N = 100,
-  T = 56,
+  n_prompts = 56,
   params = default_params(),
   motifs = "M0",
   compliance = 0.75,
@@ -31,7 +31,8 @@ simulate_ema(
 \arguments{
 \item{N}{Number of persons.}
 
-\item{T}{Number of prompts per person.}
+\item{n_prompts}{Number of prompts per person (called \code{T} in the
+archived versions 0.2.x of the package).}
 
 \item{params}{List with \code{Phi}, \code{Psi}, \code{mu}, \code{Sigma_mu}
 (see \code{\link{default_params}}).}
@@ -58,7 +59,8 @@ by \code{kappa_R} probit units.}
 (M3); the term enters as \code{burden * trend}, where the trend runs from
 -0.5 to 0.5 over the burn-in and the recorded prompts together, so a
 negative value gives declining compliance over the study and the realized
-change over the recorded prompts is about \code{burden * T / (T + burnin)}
+change over the recorded prompts is about
+\code{burden * n_prompts / (n_prompts + burnin)}
 probit units.}
 
 \item{rho_propensity}{Correlation between the person-level response
@@ -113,20 +115,20 @@ A list of class \code{"ema_sim"} with \code{data} (long data frame:
   response-model arguments) and \code{vars}. It has a \code{print} method.
 }
 \description{
-Generates a two-level VAR(1) process for \code{N} persons over \code{T}
+Generates a two-level VAR(1) process for \code{N} persons over \code{n_prompts}
 prompts and then deletes whole prompts according to one or more
 missingness motifs. Response probabilities use a probit link. Intercepts
 are calibrated numerically so that the realized response rate matches
 \code{compliance}.
 }
 \examples{
-sim <- simulate_ema(N = 20, T = 15, motifs = c("M2", "M4"), compliance = 0.7, seed = 1)
+sim <- simulate_ema(N = 20, n_prompts = 15, motifs = c("M2", "M4"), compliance = 0.7, seed = 1)
 sim
 head(sim$data)
 # the deleted states are kept for checking estimators
 head(sim$full)
 # a sensor, probes, a persistent observed context and a day structure
-sim2 <- simulate_ema(N = 20, T = 20, motifs = c("M2", "M5"), sensor_cor = 0.6,
+sim2 <- simulate_ema(N = 20, n_prompts = 20, motifs = c("M2", "M5"), sensor_cor = 0.6,
                      p_probe = 0.1, rho_context = 0.5, days = 5, seed = 2)
 names(sim2$data)
 mean(sim2$data$R[sim2$data$Z == 1])   # probes are always answered

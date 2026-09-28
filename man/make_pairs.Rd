@@ -48,11 +48,11 @@ The \code{time} column must be an integer prompt index that
   answered or not, needs a row.
 }
 \examples{
-sim <- simulate_ema(N = 10, T = 12, motifs = "M1", seed = 1)
+sim <- simulate_ema(N = 10, n_prompts = 12, motifs = "M1", seed = 1)
 pr <- make_pairs(sim$data, sim$vars)
 nrow(pr$y); pr$response_rate
 # pairs are formed within days only when a day column is given
-simd <- simulate_ema(N = 10, T = 12, days = 4, seed = 1)
+simd <- simulate_ema(N = 10, n_prompts = 12, days = 4, seed = 1)
 nrow(make_pairs(simd$data, simd$vars)$y)
 nrow(make_pairs(simd$data, simd$vars, day = "day")$y)
 }

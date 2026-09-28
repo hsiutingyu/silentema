@@ -5,6 +5,12 @@ every estimate produced with 0.2.0 or 0.2.1 is reproduced exactly; the release
 prepares the package for CRAN, completes its documentation and fixes one
 display issue.
 
+* **Renamed argument:** the number of prompts per person is set by
+  `n_prompts` in `simulate_ema()` and `simulate_from_fit()` (it was called
+  `T` in 0.2.x, which masks `TRUE`); the corresponding elements of the
+  returned objects are `settings$n_prompts` (simulations) and `n_prompts`
+  (FIML fits). Code written for 0.2.x must replace `T =` by
+  `n_prompts =`; the generated data are unchanged.
 * New vignettes: `dm-graphs` (the motif taxonomy, d-separation and
   recoverability), `testing-informativeness` (the silence test, the
   sensor-gap test and the fatigue check), `sensitivity-analysis` (tilting,

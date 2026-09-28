@@ -22,7 +22,7 @@ confidence limits (dashed), and the calibrated value (dotted vertical
 line).
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 3)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6, seed = 3)
 prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1.5, -1, -0.5, 0))
 cs <- calibrate_delta(prof, sim$data, method = "sensor")
 plot(cs, main = "Sensor calibration")

@@ -4,13 +4,16 @@
 \alias{simulate_from_fit}
 \title{Simulate data from a fitted tilt model}
 \usage{
-simulate_from_fit(fit, N, T, days = NULL, kappa_R = 0, seed = NULL)
+simulate_from_fit(fit, N, n_prompts, days = NULL, kappa_R = 0, seed = NULL)
 }
 \arguments{
 \item{fit}{A \code{tilt_fit} (or a plain \code{pairs_fit}, which is treated
 as a fit at \code{delta = 0}).}
 
-\item{N, T}{Persons and prompts.}
+\item{N}{Number of persons.}
+
+\item{n_prompts}{Number of prompts per person (called \code{T} in the
+archived versions 0.2.x of the package).}
 
 \item{days}{Optional number of prompts per day; adds a \code{day} column and
 restarts the burden term at the first prompt of each day.}
@@ -34,12 +37,12 @@ model at the fit's sensitivity value and calibrated intercept. An optional
 burden term lowers the propensity after a skipped prompt.
 }
 \examples{
-sim <- simulate_ema(N = 30, T = 20, motifs = "M2", seed = 1)
+sim <- simulate_ema(N = 30, n_prompts = 20, motifs = "M2", seed = 1)
 f <- fit_tilt(sim$data, sim$vars, delta = -1)
-d <- simulate_from_fit(f, N = 30, T = 20, seed = 2)
+d <- simulate_from_fit(f, N = 30, n_prompts = 20, seed = 2)
 mean(d$R)
 head(d)
 # with a day structure and a burden term
-d2 <- simulate_from_fit(f, N = 30, T = 20, days = 5, kappa_R = 1, seed = 2)
+d2 <- simulate_from_fit(f, N = 30, n_prompts = 20, days = 5, kappa_R = 1, seed = 2)
 fatigue_check(d2, day = "day")
 }

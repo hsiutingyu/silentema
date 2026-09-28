@@ -35,8 +35,8 @@ autocorrelated states and the person propensities, so this is a
 descriptive check, not a test of M3 against the other motifs.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M3", seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M3", seed = 1)
 fatigue_check(sim$data)
 # compare with a mechanism without burden
-fatigue_check(simulate_ema(N = 40, T = 30, motifs = "M0", seed = 1)$data)
+fatigue_check(simulate_ema(N = 40, n_prompts = 30, motifs = "M0", seed = 1)$data)
 }

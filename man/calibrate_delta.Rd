@@ -109,7 +109,7 @@ Without a burden term the model-implied curve is the M2-only curve, which
 understates \eqn{|\delta|} when burden is present.
 }
 \examples{
-sim <- simulate_ema(N = 40, T = 30, motifs = "M2", delta = -1, sensor_cor = 0.6,
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = "M2", delta = -1, sensor_cor = 0.6,
                     p_probe = 0.05, seed = 3)
 vars <- sim$vars
 prof <- tilt_profile(sim$data, vars, delta_grid = c(-1.5, -1, -0.5, 0), probe = "Z")

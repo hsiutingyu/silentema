@@ -34,7 +34,7 @@ The two tests use person fixed effects (within-person demeaning), so stable betw
 Take every triple of consecutive scheduled prompts (*t-1*, *t*, *t+1*) in which the two outer prompts were answered. The middle prompt may or may not have been answered. Regress the state at *t+1* on the state at *t-1* and the response indicator at *t*, within person. If the middle skip is uninformative, its coefficient is zero.
 
 ```{r silence}
-sim2 <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 1)
+sim2 <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1, seed = 1)
 st <- silence_test(sim2$data, sim2$vars)
 st
 ```
@@ -51,7 +51,7 @@ c(triples = attr(st, "n_triples"), skipped_middle = attr(st, "n_skipped"))
 Under a recoverable mechanism the coefficients are near zero and the joint test does not reject:
 
 ```{r silence-null}
-sim1 <- simulate_ema(N = 60, T = 40, motifs = "M1", compliance = 0.7, seed = 1)
+sim1 <- simulate_ema(N = 60, n_prompts = 40, motifs = "M1", compliance = 0.7, seed = 1)
 silence_test(sim1$data, sim1$vars)
 ```
 
@@ -64,7 +64,7 @@ The sign of the coefficient of `R_t` on the self-censoring variable is the sign 
 With at least 10 persons the default is a cluster-robust covariance by person with *t*(*G* - 1) and *F*(*q*, *G* - 1) reference distributions (Cameron & Miller, 2015). For a single person (or very few), `se = "dayblock"` resamples person-day blocks with replacement; it needs a `day` column.
 
 ```{r single}
-one <- simulate_ema(N = 1, T = 200, motifs = "M2", compliance = 0.7, delta = -1, days = 8, seed = 5)
+one <- simulate_ema(N = 1, n_prompts = 200, motifs = "M2", compliance = 0.7, delta = -1, days = 8, seed = 5)
 silence_test(one$data, one$vars, day = "day", B = 100, seed = 1)
 ```
 
@@ -83,7 +83,7 @@ silence_test(sim1$data, sim1$vars, poly = 2)$p
 When lagged-state dependence and burden are both present, conditioning on an answered prompt at *t+1* opens a collider at `R_{t+1}`: its parents are `R_t` (burden) and `X_t` (lagged-state dependence), and `X_t` drives `X_{t+1}`. Given that the prompt at *t+1* was answered despite a skip at *t*, the state at *t* must have favored responding, so the state at *t+1* is shifted, and the silence test rejects in large samples although the transition kernel is recoverable. `recoverability()` warns about it. The coefficient has the sign *opposite* to the self-censoring signature (positive when high states lower the propensity to respond), which is one reason to run `fatigue_check()` before interpreting a rejection. Under M2 + M3 the analogous collider (with `X_{t+1}` as a parent of `R_{t+1}`) works *against* the self-censoring signal, so the test loses power. In both cases the sensor-gap test is the better instrument.
 
 ```{r collider}
-sim13 <- simulate_ema(N = 300, T = 56, motifs = c("M1", "M3"), compliance = 0.7, kappa_R = 1, seed = 2)
+sim13 <- simulate_ema(N = 300, n_prompts = 56, motifs = c("M1", "M3"), compliance = 0.7, kappa_R = 1, seed = 2)
 silence_test(sim13$data, sim13$vars)
 recoverability(dm_graph(c("M1", "M3")))$estimator[6]
 ```
@@ -93,7 +93,7 @@ recoverability(dm_graph(c("M1", "M3")))$estimator[6]
 An always-observed channel that loads on the states (an accelerometer, heart rate, phone-usage features) turns the question around: instead of asking what happens *after* a skip, ask what the sensor recorded *at* the skipped prompt. `sensor_gap_test()` regresses the sensor at *t* on the state at *t-1* and `R_t`, within person, over all prompts whose predecessor was answered. Nothing at *t+1* is conditioned on, so the test is valid under M1 + M3 as well.
 
 ```{r sensor}
-sim2s <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.7, delta = -1,
+sim2s <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.7, delta = -1,
                       sensor_cor = 0.6, seed = 3)
 sg <- sensor_gap_test(sim2s$data, sim2s$vars, sensor = "S")
 sg
@@ -105,7 +105,7 @@ The sensor gap is negative: at skipped prompts the sensor recorded higher values
 Under a recoverable mechanism the gap is null:
 
 ```{r sensor-null}
-sim1s <- simulate_ema(N = 60, T = 40, motifs = c("M1", "M3"), compliance = 0.7, sensor_cor = 0.6, seed = 3)
+sim1s <- simulate_ema(N = 60, n_prompts = 40, motifs = c("M1", "M3"), compliance = 0.7, sensor_cor = 0.6, seed = 3)
 sensor_gap_test(sim1s$data, sim1s$vars, sensor = "S")
 ```
 
@@ -114,7 +114,7 @@ sensor_gap_test(sim1s$data, sim1s$vars, sensor = "S")
 `fatigue_check()` is descriptive. It reports the response rate after an answered and after a skipped prompt, pooled and as the mean of the person-specific differences, and the response rate by study quarter. A large persistence contrast (the `kappa_R` term of the simulator) and, when compliance drifts over the study (a negative `burden` term), a declining rate over quarters are what burden (M3) produces; the example below uses `kappa_R` only, so the quarterly rates stay flat. Some serial dependence in `R` also arises under M1, M2 and M4 through the autocorrelated states and the person propensities, so the check does not discriminate M3 from the other motifs by itself.
 
 ```{r fatigue}
-sim3 <- simulate_ema(N = 60, T = 40, motifs = "M3", compliance = 0.7, kappa_R = 1, seed = 4)
+sim3 <- simulate_ema(N = 60, n_prompts = 40, motifs = "M3", compliance = 0.7, kappa_R = 1, seed = 4)
 fatigue_check(sim3$data)
 fatigue_check(sim2$data)
 ```
@@ -130,7 +130,7 @@ The loop below repeats the silence test on new data sets under three mechanisms.
 ```{r mc}
 rej <- function(motifs, reps = 60, ...) {
   mean(vapply(seq_len(reps), function(r) {
-    s <- simulate_ema(N = 60, T = 40, motifs = motifs, compliance = 0.7, seed = 1000 + r, ...)
+    s <- simulate_ema(N = 60, n_prompts = 40, motifs = motifs, compliance = 0.7, seed = 1000 + r, ...)
     attr(silence_test(s$data, s$vars), "joint")["p"] < 0.05
   }, logical(1)))
 }

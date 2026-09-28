@@ -35,7 +35,7 @@ Rows for skipped prompts must be present (with `R = 0` and `NA` states): the tes
 
 ```{r sim}
 library(silentema)
-sim <- simulate_ema(N = 60, T = 40, motifs = "M2", compliance = 0.70, delta = -1,
+sim <- simulate_ema(N = 60, n_prompts = 40, motifs = "M2", compliance = 0.70, delta = -1,
                     sensor_cor = 0.6, p_probe = 0.05, days = 5, seed = 1)
 sim
 head(sim$data)

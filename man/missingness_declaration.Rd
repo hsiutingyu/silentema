@@ -53,7 +53,7 @@ prompts to complete.
 }
 \examples{
 g <- dm_graph(c("M2", "M4"), sensor = TRUE)
-sim <- simulate_ema(N = 40, T = 30, motifs = c("M2", "M4"), sensor_cor = 0.6, seed = 1)
+sim <- simulate_ema(N = 40, n_prompts = 30, motifs = c("M2", "M4"), sensor_cor = 0.6, seed = 1)
 st <- silence_test(sim$data, sim$vars)
 prof <- tilt_profile(sim$data, sim$vars, delta_grid = c(-1, -0.5, 0), propensity = "person")
 cal <- calibrate_delta(prof, sim$data, method = "sensor")
